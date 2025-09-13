@@ -32,8 +32,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
   onDownload,
   onPrint,
   onShare,
-  onFullscreen,
-  onClose
+  onFullscreen
 }) => {
   const [zoom, setZoom] = useState(78);
   const [touchStart, setTouchStart] = useState<number | null>(null);
