@@ -49,6 +49,7 @@ const PastPapers: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<string>('past-year-papers');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const [filters, setFilters] = useState<FilterState>({
     curriculum: '',
     subject: '',
@@ -202,30 +203,125 @@ const PastPapers: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Filter Bar */}
-      <FilterBar
-        filters={filters}
-        filterConfigs={filterConfigs}
-        onFilterChange={handleFilterChange}
-        onClearFilters={clearFilters}
-        onSearch={handleSearch}
-        searchQuery={searchQuery}
-      />
+      {/* Filter Bar - Hidden on mobile, shown on tablet+ */}
+      <div className="hidden md:block">
+        <FilterBar
+          filters={filters}
+          filterConfigs={filterConfigs}
+          onFilterChange={handleFilterChange}
+          onClearFilters={clearFilters}
+          onSearch={handleSearch}
+          searchQuery={searchQuery}
+        />
+      </div>
+
+      {/* Mobile Filter Toggle */}
+      <div className="md:hidden bg-white border-b border-gray-200 p-4">
+        <button
+          onClick={() => setShowMobileFilters(!showMobileFilters)}
+          className="w-full flex items-center justify-between px-4 py-2 bg-blue-50 text-blue-700 rounded-lg border border-blue-200"
+        >
+          <span className="font-medium">Filters</span>
+          <svg className={`w-5 h-5 transition-transform ${showMobileFilters ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        
+        {/* Mobile Filter Panel */}
+        {showMobileFilters && (
+          <div className="mt-4 space-y-3">
+            <div className="grid grid-cols-2 gap-2">
+              {filterConfigs.slice(0, 4).map((config) => (
+                <select
+                  key={config.key}
+                  value={filters[config.key as keyof FilterState] || ''}
+                  onChange={(e) => handleFilterChange(config.key, e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">{config.placeholder}</option>
+                  {config.options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {filterConfigs.slice(4).map((config) => (
+                <select
+                  key={config.key}
+                  value={filters[config.key as keyof FilterState] || ''}
+                  onChange={(e) => handleFilterChange(config.key, e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">{config.placeholder}</option>
+                  {config.options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              ))}
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                placeholder="Search papers..."
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 text-blue-600 bg-blue-50 rounded-lg text-sm font-medium border border-blue-200"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Main Content - Responsive Layout */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Left Sidebar - Categories */}
+        {/* Categories - Mobile: Horizontal scroll, Desktop: Sidebar */}
         <div className="lg:w-64 flex-shrink-0">
-          <PaperCategorySidebar
-            activeCategory={activeCategory}
-            onCategoryChange={handleCategoryChange}
-          />
+          <div className="lg:hidden bg-white border-b border-gray-200 p-4">
+            <div className="flex space-x-2 overflow-x-auto pb-2">
+              {[
+                { id: 'past-year-papers', name: 'Past Papers', count: 2450 },
+                { id: 'topical-papers', name: 'Topical', count: 1890 },
+                { id: 'mock-papers', name: 'Mock', count: 760 },
+                { id: 'specimen-papers', name: 'Specimen', count: 340 }
+              ].map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => handleCategoryChange(category.id)}
+                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    activeCategory === category.id
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {category.name} ({category.count})
+                </button>
+              ))}
+            </div>
+          </div>
+          
+          <div className="hidden lg:block">
+            <PaperCategorySidebar
+              activeCategory={activeCategory}
+              onCategoryChange={handleCategoryChange}
+            />
+          </div>
         </div>
 
-        {/* Middle and Right sections for mobile/tablet */}
-        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-          {/* Middle - Paper List */}
-          <div className="md:w-1/2 lg:w-auto lg:flex-1 flex-shrink-0">
+        {/* Papers and PDF - Mobile: Stack, Desktop: Side by side */}
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+          {/* Paper List */}
+          <div className="flex-1 lg:max-w-md">
             <PaperList
               papers={papers}
               loading={loading}
@@ -236,8 +332,21 @@ const PastPapers: React.FC = () => {
             />
           </div>
 
-          {/* Right - PDF Viewer */}
-          <div className="md:w-1/2 lg:w-1/2 lg:min-w-[400px] flex-shrink-0">
+          {/* PDF Viewer - Hidden on mobile unless paper selected */}
+          <div className={`lg:flex-1 lg:min-w-[400px] ${selectedPaper ? 'block' : 'hidden lg:block'}`}>
+            {selectedPaper && (
+              <div className="lg:hidden bg-white border-b border-gray-200 p-4">
+                <button
+                  onClick={() => setSelectedPaper(null)}
+                  className="flex items-center text-blue-600 font-medium"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  Back to Papers
+                </button>
+              </div>
+            )}
             <PDFViewer
               pdfUrl={selectedPaper ? `/pdfs/${selectedPaper.id}.pdf` : undefined}
               paperTitle={selectedPaper ? `${selectedPaper.curriculum}/${selectedPaper.paperNumber}_${selectedPaper.season.replace('/', '')}_${selectedPaper.year}` : undefined}

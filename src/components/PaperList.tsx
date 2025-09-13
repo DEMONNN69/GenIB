@@ -34,7 +34,7 @@ const PaperList: React.FC<PaperListProps> = ({
   onDownload
 }) => {
   const getRowClassName = (paper: Paper) => {
-    const baseClasses = "flex items-center px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150";
+    const baseClasses = "flex items-start lg:items-center px-3 lg:px-4 py-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150";
     return selectedPaper?.id === paper.id 
       ? `${baseClasses} bg-blue-50 border-l-4 border-blue-600`
       : baseClasses;
@@ -71,8 +71,8 @@ const PaperList: React.FC<PaperListProps> = ({
   return (
     <div className="flex-1 bg-white">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200 bg-gray-50">
-        <div className="flex items-center justify-between">
+      <div className="p-3 lg:p-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex flex-col space-y-2 lg:flex-row lg:items-center lg:justify-between lg:space-y-0">
           <div className="flex items-center space-x-2">
             <span className="text-sm font-medium text-gray-900">Sort by:</span>
             <select className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -84,7 +84,7 @@ const PaperList: React.FC<PaperListProps> = ({
           </div>
           <div className="flex items-center space-x-4 text-sm text-gray-600">
             <span>1 - 25</span>
-            <span>|</span>
+            <span className="hidden lg:inline">|</span>
             <span>{papers.length} papers</span>
           </div>
         </div>
@@ -105,11 +105,11 @@ const PaperList: React.FC<PaperListProps> = ({
               onClick={() => onPaperSelect(paper)}
             >
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                   <h3 className="text-sm font-medium text-gray-900 truncate">
                     {formatPaperCode(paper)}
                   </h3>
-                  <div className="flex items-center space-x-2 ml-4">
+                  <div className="flex items-center space-x-2 mt-2 lg:mt-0 lg:ml-4">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -143,21 +143,21 @@ const PaperList: React.FC<PaperListProps> = ({
                   </div>
                 </div>
                 
-                <div className="mt-1 flex items-center space-x-4 text-xs text-gray-500">
+                <div className="mt-1 flex flex-wrap items-center gap-1 lg:gap-4 text-xs text-gray-500">
                   <span>{paper.subject}</span>
-                  <span>•</span>
+                  <span className="hidden lg:inline">•</span>
                   <span>{paper.year}</span>
-                  <span>•</span>
+                  <span className="hidden lg:inline">•</span>
                   <span>{paper.season}</span>
                   {paper.zone && (
                     <>
-                      <span>•</span>
+                      <span className="hidden lg:inline">•</span>
                       <span>{paper.zone}</span>
                     </>
                   )}
                   {paper.duration && (
                     <>
-                      <span>•</span>
+                      <span className="hidden lg:inline">•</span>
                       <span>{paper.duration} min</span>
                     </>
                   )}
@@ -173,7 +173,7 @@ const PaperList: React.FC<PaperListProps> = ({
                       : 'bg-purple-100 text-purple-800'
                   }`}>
                     {paper.type === 'question' ? 'Question Paper' :
-                     paper.type === 'marking-scheme' ? 'Marking Scheme' : 'Examiner Report'}
+                     paper.type === 'marking-scheme' ? 'Mark Scheme' : 'Examiner Report'}
                   </span>
                 </div>
               </div>
