@@ -46,24 +46,86 @@ const mockQuestions = [
 const mockPapers = [
   {
     id: 1,
-    title: "Biology Paper 1",
-    subject: "Biology",
-    curriculum: "Cambridge IGCSE",
-    year: 2023,
+    title: "0985/22_Summer_2025",
+    subject: "Accounting 9-1(0985)",
+    curriculum: "CIE IGCSE",
+    year: 2025,
     season: "May/June",
-    duration: 45,
-    questions: [1],
+    paperNumber: "22",
+    zone: "Zone 1",
+    duration: 105,
+    type: "question",
+    totalPages: 20,
     isFavorite: false
   },
   {
     id: 2,
-    title: "Mathematics Paper 2",
-    subject: "Mathematics",
-    curriculum: "Cambridge IGCSE",
-    year: 2023,
+    title: "0985/21_Summer_2025",
+    subject: "Accounting 9-1(0985)",
+    curriculum: "CIE IGCSE",
+    year: 2025,
+    season: "May/June",
+    paperNumber: "21",
+    zone: "Zone 1",
+    duration: 105,
+    type: "question",
+    totalPages: 18,
+    isFavorite: true
+  },
+  {
+    id: 3,
+    title: "0985/12_Winter_2024",
+    subject: "Accounting 9-1(0985)",
+    curriculum: "CIE IGCSE",
+    year: 2024,
     season: "Oct/Nov",
+    paperNumber: "12",
+    zone: "Zone 2",
+    duration: 105,
+    type: "question",
+    totalPages: 22,
+    isFavorite: false
+  },
+  {
+    id: 4,
+    title: "0985/22_Winter_2024",
+    subject: "Accounting 9-1(0985)",
+    curriculum: "CIE IGCSE",
+    year: 2024,
+    season: "Oct/Nov",
+    paperNumber: "22",
+    zone: "Zone 1",
+    duration: 105,
+    type: "marking-scheme",
+    totalPages: 15,
+    isFavorite: false
+  },
+  {
+    id: 5,
+    title: "0970/21_Summer_2024",
+    subject: "Biology 9-1(0970)",
+    curriculum: "CIE IGCSE",
+    year: 2024,
+    season: "May/June",
+    paperNumber: "21",
+    zone: "Zone 1",
+    duration: 105,
+    type: "question",
+    totalPages: 24,
+    isFavorite: false
+  },
+  {
+    id: 6,
+    title: "0980/12_Summer_2024",
+    subject: "Mathematics 9-1(0980)",
+    curriculum: "CIE IGCSE",
+    year: 2024,
+    season: "May/June",
+    paperNumber: "12",
+    zone: "Zone 1",
     duration: 90,
-    questions: [2],
+    type: "question",
+    totalPages: 16,
     isFavorite: true
   }
 ];
@@ -127,6 +189,19 @@ export const fetchPapers = async (filters: any = {}) => {
   }
   if (filters.year) {
     filtered = filtered.filter(p => p.year === parseInt(filters.year));
+  }
+  if (filters.season) {
+    filtered = filtered.filter(p => p.season === filters.season);
+  }
+  if (filters.paper) {
+    filtered = filtered.filter(p => p.paperNumber === filters.paper.replace('Paper ', ''));
+  }
+  if (filters.zone) {
+    filtered = filtered.filter(p => p.zone === filters.zone);
+  }
+  if (filters.category) {
+    // Filter by category - for now just return all, can be expanded
+    // Different categories would have different paper types
   }
   
   return filtered;
