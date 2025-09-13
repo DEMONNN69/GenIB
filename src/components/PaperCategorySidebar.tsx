@@ -148,17 +148,6 @@ const PaperCategorySidebar: React.FC<PaperCategorySidebarProps> = ({
           })}
         </div>
       </div>
-
-      {/* Footer */}
-      <div className="absolute bottom-0 w-64 p-4 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-teal-50">
-        <div className="text-center">
-          <h3 className="text-sm font-medium text-gray-900 mb-1">For Schools</h3>
-          <p className="text-xs text-gray-600 mb-3">Access premium features</p>
-          <button className="w-full bg-blue-600 text-white text-xs font-medium py-2 px-3 rounded-md hover:bg-blue-700 transition-colors">
-            Learn More
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
