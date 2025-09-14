@@ -49,7 +49,7 @@ const BenefitsSection: React.FC = () => {
               description="3D illustration of diverse students celebrating academic achievements with floating grade certificates, books, and success symbols around them"
               alt="Students celebrating academic success with IB certificates"
               className="w-full h-80 lg:h-96"
-              imagePath='public/illustrations/Stocky man showing ok hand sign.png'
+              imagePath='illustrations/Stocky man showing ok hand sign.png'
             />
           </div>
         </div>

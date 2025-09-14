@@ -96,7 +96,7 @@ const FAQSection: React.FC = () => {
               description="3D illustration of a friendly customer support scene with a smiling support agent surrounded by floating question marks, chat bubbles, help icons, and students getting assistance through various devices"
               alt="Customer support helping students with their questions"
               className="w-full h-80 lg:h-96"
-              imagePath="public\illustrations\woman talking with chatbot.png"
+              imagePath="illustrations/woman talking with chatbot.png"
             />
 
             {/* Contact Info Card */}

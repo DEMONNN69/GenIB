@@ -99,7 +99,7 @@ const StudyProcessSection: React.FC = () => {
               description="3D illustration of a student's study journey showing: a laptop with exam papers floating out, progress charts, study notes, and achievement badges in a dynamic spiral formation"
               alt="Student's interactive learning journey with digital study materials"
               className="w-full h-96 lg:h-[500px] xl:h-[600px]"
-              imagePath='public\illustrations\young boys and young girl jumping.png'
+              imagePath='illustrations/young boys and young girl jumping.png'
             />
           </div>
         </div>
