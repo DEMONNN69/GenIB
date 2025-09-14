@@ -33,7 +33,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
           {/* Left section */}
           <div className="flex items-center space-x-6">
             <button
-              onClick={toggleSidebar}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
             >
               <Bars3Icon className="h-6 w-6" />
@@ -90,13 +90,6 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
 
           {/* Right section */}
           <div className="flex items-center space-x-2">
-            {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-            >
-              <Bars3Icon className="h-6 w-6" />
-            </button>
 
             {/* Subscriptions */}
             <div className="hidden xl:block">
