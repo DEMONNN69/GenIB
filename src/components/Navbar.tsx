@@ -16,6 +16,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const notifications = [
     { id: 1, text: "New past papers added for May/June 2025", time: "2 hours ago", unread: true },
@@ -89,6 +90,14 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
 
           {/* Right section */}
           <div className="flex items-center space-x-2">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+            >
+              <Bars3Icon className="h-6 w-6" />
+            </button>
+
             {/* Subscriptions */}
             <div className="hidden xl:block">
               <Link
@@ -204,6 +213,42 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
           </div>
         </div>
       </div>
+
+      {/* Mobile Navigation Menu */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden bg-white border-t border-gray-200">
+          <div className="px-4 py-3 space-y-1">
+            <Link
+              to="/papers"
+              className="block px-3 py-2 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 border border-blue-200"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Past Papers
+            </Link>
+            <Link
+              to="/question-bank"
+              className="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Question Bank
+            </Link>
+            <Link
+              to="/exam-builder"
+              className="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Exam Builder
+            </Link>
+            <Link
+              to="/subscriptions"
+              className="block px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              Subscriptions
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Search Bar */}
       <div className="md:hidden px-4 pb-4 bg-gray-50 border-t border-gray-200">
