@@ -51,7 +51,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
             {/* Navigation Pills */}
             <div className="hidden lg:flex items-center space-x-1">
               <Link
-                to="/past-papers"
+                to="/papers"
                 className="bg-blue-50 text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-blue-200"
               >
                 Past Papers

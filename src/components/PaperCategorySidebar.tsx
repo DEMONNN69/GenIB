@@ -1,19 +1,19 @@
 import React from 'react';
 import { 
-  DocumentTextIcon, 
-  QuestionMarkCircleIcon, 
-  BookOpenIcon,
-  AcademicCapIcon,
-  ClipboardDocumentListIcon,
-  StarIcon,
-  BuildingLibraryIcon,
-  BeakerIcon
-} from '@heroicons/react/24/outline';
+  DocumentText, 
+  MessageQuestion, 
+  Book,
+  Teacher,
+  Clipboard,
+  Star,
+  Buildings,
+  Setting2
+} from 'iconsax-react';
 
 interface PaperCategory {
   id: string;
   name: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  icon: React.ComponentType<any>;
   description: string;
   count?: number;
   isActive: boolean;
@@ -32,7 +32,7 @@ const PaperCategorySidebar: React.FC<PaperCategorySidebarProps> = ({
     {
       id: 'past-year-papers',
       name: 'Past Year Papers',
-      icon: DocumentTextIcon,
+      icon: DocumentText,
       description: 'Free, PDF, downloadable',
       count: 2450,
       isActive: activeCategory === 'past-year-papers'
@@ -40,7 +40,7 @@ const PaperCategorySidebar: React.FC<PaperCategorySidebarProps> = ({
     {
       id: 'topical-past-papers',
       name: 'Topical Past Papers',
-      icon: BookOpenIcon,
+      icon: Book,
       description: 'Not free, online, not downloadable',
       count: 1890,
       isActive: activeCategory === 'topical-past-papers'
@@ -48,7 +48,7 @@ const PaperCategorySidebar: React.FC<PaperCategorySidebarProps> = ({
     {
       id: 'mcq-past-papers',
       name: 'MCQ Past Papers',
-      icon: QuestionMarkCircleIcon,
+      icon: MessageQuestion,
       description: 'Not free, online practice',
       count: 980,
       isActive: activeCategory === 'mcq-past-papers'
@@ -56,7 +56,7 @@ const PaperCategorySidebar: React.FC<PaperCategorySidebarProps> = ({
     {
       id: 'non-topical-past-papers',
       name: 'Non-Topical Past Papers',
-      icon: ClipboardDocumentListIcon,
+      icon: Clipboard,
       description: 'Free, online, not downloadable',
       count: 760,
       isActive: activeCategory === 'non-topical-past-papers'
@@ -64,7 +64,7 @@ const PaperCategorySidebar: React.FC<PaperCategorySidebarProps> = ({
     {
       id: 'solved-past-papers',
       name: 'Solved Past Papers',
-      icon: AcademicCapIcon,
+      icon: Teacher,
       description: 'Not free, PDF, downloadable',
       count: 340,
       isActive: activeCategory === 'solved-past-papers'
@@ -72,7 +72,7 @@ const PaperCategorySidebar: React.FC<PaperCategorySidebarProps> = ({
     {
       id: 'genib-question-bank',
       name: 'GenIB Question Bank',
-      icon: BuildingLibraryIcon,
+      icon: Buildings,
       description: 'Free, online, not downloadable',
       count: 5600,
       isActive: activeCategory === 'genib-question-bank'
@@ -80,7 +80,7 @@ const PaperCategorySidebar: React.FC<PaperCategorySidebarProps> = ({
     {
       id: 'act-sat-ap',
       name: 'ACT, SAT, AP',
-      icon: StarIcon,
+      icon: Star,
       description: 'Free, online, not downloadable',
       count: 180,
       isActive: activeCategory === 'act-sat-ap'
@@ -88,7 +88,7 @@ const PaperCategorySidebar: React.FC<PaperCategorySidebarProps> = ({
     {
       id: 'build-exam-worksheet',
       name: 'Build Exam or Worksheet',
-      icon: BeakerIcon,
+      icon: Setting2,
       description: 'Not free, convert to PDF, printable',
       isActive: activeCategory === 'build-exam-worksheet'
     }
@@ -117,7 +117,7 @@ const PaperCategorySidebar: React.FC<PaperCategorySidebarProps> = ({
                       ? 'bg-blue-100 text-blue-600' 
                       : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
                   }`}>
-                    <Icon className="h-5 w-5" />
+                    <Icon variant="Bold" size={20} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">

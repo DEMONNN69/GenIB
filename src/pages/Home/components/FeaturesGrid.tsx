@@ -9,8 +9,8 @@ interface FeaturesGridProps {
 
 const FeaturesGrid: React.FC<FeaturesGridProps> = ({ features }) => {
   return (
-    <div className="py-12 bg-white">
-      <div className="container mx-auto px-4">
+    <section className="py-16 bg-white">
+      <div className="container mx-auto px-8">
         <div className="text-center mb-12">
           <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-4">
             Everything You Need to Excel
@@ -54,7 +54,7 @@ const FeaturesGrid: React.FC<FeaturesGridProps> = ({ features }) => {
           })}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

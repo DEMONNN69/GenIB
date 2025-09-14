@@ -11,8 +11,8 @@ interface HeroSectionProps {
 
 const HeroSection: React.FC<HeroSectionProps> = ({ stats }) => {
   return (
-    <div className="bg-white">
-      <div className="container mx-auto px-8 py-8 lg:py-12">
+    <section className="bg-white py-16 lg:py-20">
+      <div className="container mx-auto px-8">
         <div className="grid lg:grid-cols-2 gap-8 items-center">
           {/* Left Content */}
           <div className="space-y-6">
@@ -70,7 +70,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ stats }) => {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

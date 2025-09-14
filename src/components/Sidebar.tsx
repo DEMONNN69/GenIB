@@ -35,42 +35,42 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     },
     { 
       name: 'Topical Past Papers', 
-      href: '/topical-papers', 
+      href: '/papers', 
       icon: Book,
       description: 'Not free, online, not downloadable',
       count: 1890
     },
     { 
       name: 'MCQ Past Papers', 
-      href: '/mcq-papers', 
+      href: '/papers', 
       icon: MessageQuestion,
       description: 'Not free, online practice',
       count: 980
     },
     { 
       name: 'Non-Topical Past Papers', 
-      href: '/non-topical-papers', 
+      href: '/papers', 
       icon: ClipboardText,
       description: 'Free, online, not downloadable',
       count: 760
     },
     { 
       name: 'Solved Past Papers', 
-      href: '/solved-papers', 
+      href: '/papers', 
       icon: Teacher,
       description: 'Not free, PDF, downloadable',
       count: 340
     },
     { 
       name: 'GenIB Question Bank', 
-      href: '/question-bank', 
+      href: '/questions', 
       icon: Building4,
       description: 'Free, online, not downloadable',
       count: 5600
     },
     { 
       name: 'ACT, SAT, AP', 
-      href: '/act-sat-ap', 
+      href: '/papers', 
       icon: Star,
       description: 'Free, online, not downloadable',
       count: 180

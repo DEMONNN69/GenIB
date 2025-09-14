@@ -19,8 +19,10 @@ function AppContent() {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Hide main sidebar on Past Papers page since it has its own layout
-  const hideSidebar = location.pathname === '/papers' || location.pathname.startsWith('/papers/');
+  // Hide main sidebar on Home page and Past Papers page since they have their own layouts
+  const hideSidebar = location.pathname === '/' || 
+                     location.pathname === '/papers' || 
+                     location.pathname.startsWith('/papers/');
 
   return (
     <div className="min-h-screen bg-gray-50">
