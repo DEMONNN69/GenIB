@@ -40,9 +40,11 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
             
             <Link to="/" className="flex items-center group">
               <div className="flex items-center space-x-2">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold text-xl px-4 py-2 rounded-lg shadow-sm group-hover:shadow-md transition-all duration-200">
-                  Gen<span className="text-blue-100">IB</span>
-                </div>
+                <img 
+                  src="/logo/genib.png" 
+                  alt="GenIB" 
+                  className="h-10 w-auto group-hover:scale-105 transition-transform duration-200"
+                />
               </div>
             </Link>
 

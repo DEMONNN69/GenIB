@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar.tsx';
 import Sidebar from './components/Sidebar.tsx';
-import Home from './pages/Home.tsx';
+import Home from './pages/Home';
 import QuestionBank from './pages/QuestionBank.tsx';
 import PastPapers from './pages/PastPapers.tsx';
 import ExamBuilder from './pages/ExamBuilder.tsx';
@@ -29,7 +29,7 @@ function AppContent() {
       <div className="flex">
         {!hideSidebar && <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />}
         
-        <main className={`flex-1 ${!hideSidebar ? 'lg:ml-64' : ''}`}>
+        <main className={`flex-1 ${!hideSidebar ? '' : ''}`}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/questions" element={<QuestionBank />} />

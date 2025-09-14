@@ -1,19 +1,20 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import {
-  HomeIcon,
-  DocumentTextIcon,
-  QuestionMarkCircleIcon,
-  BookOpenIcon,
-  ClipboardDocumentListIcon,
-  AcademicCapIcon,
-  BuildingLibraryIcon,
-  StarIcon,
-  BeakerIcon,
-  HeartIcon,
-  UserIcon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
+  Home2,
+  DocumentText,
+  MessageQuestion,
+  Book,
+  ClipboardText,
+  Teacher,
+  Building4,
+  Star,
+  DocumentCode2,
+  Heart,
+  Profile,
+  Building
+} from 'iconsax-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -27,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     { 
       name: 'Past Year Papers', 
       href: '/papers', 
-      icon: DocumentTextIcon,
+      icon: DocumentText,
       description: 'Free, PDF, downloadable',
       count: 2450,
       isMain: true
@@ -35,57 +36,57 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     { 
       name: 'Topical Past Papers', 
       href: '/topical-papers', 
-      icon: BookOpenIcon,
+      icon: Book,
       description: 'Not free, online, not downloadable',
       count: 1890
     },
     { 
       name: 'MCQ Past Papers', 
       href: '/mcq-papers', 
-      icon: QuestionMarkCircleIcon,
+      icon: MessageQuestion,
       description: 'Not free, online practice',
       count: 980
     },
     { 
       name: 'Non-Topical Past Papers', 
       href: '/non-topical-papers', 
-      icon: ClipboardDocumentListIcon,
+      icon: ClipboardText,
       description: 'Free, online, not downloadable',
       count: 760
     },
     { 
       name: 'Solved Past Papers', 
       href: '/solved-papers', 
-      icon: AcademicCapIcon,
+      icon: Teacher,
       description: 'Not free, PDF, downloadable',
       count: 340
     },
     { 
       name: 'GenIB Question Bank', 
       href: '/question-bank', 
-      icon: BuildingLibraryIcon,
+      icon: Building4,
       description: 'Free, online, not downloadable',
       count: 5600
     },
     { 
       name: 'ACT, SAT, AP', 
       href: '/act-sat-ap', 
-      icon: StarIcon,
+      icon: Star,
       description: 'Free, online, not downloadable',
       count: 180
     },
     { 
       name: 'Build Exam or Worksheet', 
       href: '/exam-builder', 
-      icon: BeakerIcon,
+      icon: DocumentCode2,
       description: 'Not free, convert to PDF, printable'
     }
   ];
 
   const otherLinks = [
-    { name: 'Dashboard', href: '/', icon: HomeIcon },
-    { name: 'Favorites', href: '/favorites', icon: HeartIcon },
-    { name: 'Profile', href: '/profile', icon: UserIcon }
+    { name: 'Dashboard', href: '/', icon: Home2 },
+    { name: 'Favorites', href: '/favorites', icon: Heart },
+    { name: 'Profile', href: '/profile', icon: Profile }
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -103,7 +104,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
       {/* Sidebar */}
       <div className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out
-        lg:translate-x-0 lg:static lg:inset-0
+        lg:translate-x-0 lg:relative lg:inset-auto
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 lg:hidden">
@@ -136,7 +137,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                         }
                       `}
                     >
-                      <Icon className="mr-3 h-5 w-5" />
+                      <Icon 
+                        variant={isActive(item.href) ? "Bold" : "Outline"} 
+                        size={20} 
+                        className="mr-3" 
+                      />
                       {item.name}
                     </Link>
                   </li>
@@ -170,7 +175,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                             ? 'bg-blue-100 text-blue-600' 
                             : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
                         }`}>
-                          <Icon className="h-5 w-5" />
+                          <Icon 
+                            variant={isActive(category.href) ? "Bold" : "Outline"} 
+                            size={20} 
+                          />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
@@ -209,7 +217,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           <div className="text-center">
             <div className="flex items-center justify-center mb-2">
               <div className="bg-blue-600 text-white p-2 rounded-lg">
-                <BuildingLibraryIcon className="h-6 w-6" />
+                <Building variant="Bold" size={24} />
               </div>
             </div>
             <h3 className="text-sm font-medium text-gray-900 mb-1">For Schools</h3>
