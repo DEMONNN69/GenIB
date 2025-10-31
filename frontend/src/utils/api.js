@@ -1,53 +1,9 @@
-// Mock API functions that simulate Django REST Framework endpoints
-// Easy to replace with actual fetch calls later
+// Base URL for API - exported for use in other API files
+export const BASE_URL = 'http://localhost:8000/api/v1';
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+// This file will contain other API endpoints (questions, papers, etc.)
+// For authentication endpoints, see authApi.ts
 
-// Mock data
-const mockQuestions = [
-  {
-    id: 1,
-    title: "Photosynthesis Process",
-    subject: "Biology",
-    curriculum: "Cambridge IGCSE",
-    year: 2023,
-    season: "May/June",
-    difficulty: "Medium",
-    content: "Explain the process of photosynthesis and its importance in the ecosystem.",
-    answer: "Photosynthesis is the process by which green plants convert light energy into chemical energy...",
-    isFavorite: false
-  },
-  {
-    id: 2,
-    title: "Quadratic Equations",
-    subject: "Mathematics",
-    curriculum: "Cambridge IGCSE",
-    year: 2023,
-    season: "Oct/Nov",
-    difficulty: "Hard",
-    content: "Solve the quadratic equation: 2x² + 5x - 3 = 0",
-    answer: "Using the quadratic formula: x = (-5 ± √(25 + 24))/4 = (-5 ± 7)/4...",
-    isFavorite: true
-  },
-  {
-    id: 3,
-    title: "Shakespeare's Themes",
-    subject: "English Literature",
-    curriculum: "Cambridge A-Level",
-    year: 2022,
-    season: "May/June",
-    difficulty: "Medium",
-    content: "Analyze the theme of appearance vs reality in Hamlet.",
-    answer: "Shakespeare explores the theme of appearance versus reality throughout Hamlet...",
-    isFavorite: false
-  }
-];
-
-const mockPapers = [
-  {
-    id: 1,
-    title: "Biology Paper 1",
-    subject: "Biology",
     curriculum: "Cambridge IGCSE",
     year: 2023,
     season: "May/June",

@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Navbar from './components/Navbar.tsx';
 import Sidebar from './components/Sidebar.tsx';
 import Home from './pages/Home';
+import Login from './pages/Login.tsx';
+import Register from './pages/Register.tsx';
 import QuestionBank from './pages/QuestionBank.tsx';
 import PastPapers from './pages/PastPapers.tsx';
 import ExamBuilder from './pages/ExamBuilder.tsx';
@@ -19,14 +21,18 @@ function AppContent() {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // Hide navbar and sidebar on auth pages
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  
   // Hide main sidebar on Home page and Past Papers page since they have their own layouts
   const hideSidebar = location.pathname === '/' || 
                      location.pathname === '/papers' || 
-                     location.pathname.startsWith('/papers/');
+                     location.pathname.startsWith('/papers/') ||
+                     isAuthPage;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar toggleSidebar={toggleSidebar} />
+      {!isAuthPage && <Navbar toggleSidebar={toggleSidebar} />}
       
       <div className="flex">
         {!hideSidebar && <Sidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />}
@@ -34,6 +40,8 @@ function AppContent() {
         <main className={`flex-1 ${!hideSidebar ? '' : ''}`}>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/questions" element={<QuestionBank />} />
             <Route path="/questions/:id" element={<QuestionDetail />} />
             <Route path="/papers" element={<PastPapers />} />

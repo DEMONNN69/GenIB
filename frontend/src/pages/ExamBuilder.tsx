@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PlusCircleIcon, TrashIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
-import { fetchQuestions, createExam } from '../utils/api';
+// import { fetchQuestions, createExam } from '../utils/api';
 
 interface Question {
   id: number;

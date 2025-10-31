@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { HeartIcon, EyeIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
-import { fetchFavorites } from '../utils/api';
+// import { fetchFavorites } from '../utils/api';
 
 interface Question {
   id: number;

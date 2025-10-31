@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeftIcon, HeartIcon, ClockIcon, DocumentTextIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
-import { fetchPaperById, toggleFavorite } from '../utils/api';
+// import { fetchPaperById, toggleFavorite } from '../utils/api';
 
 interface Paper {
   id: number;

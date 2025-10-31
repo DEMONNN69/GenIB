@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { HeartIcon, EyeIcon, FunnelIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
-import { fetchQuestions, toggleFavorite } from '../utils/api';
+// import { fetchQuestions, toggleFavorite } from '../utils/api';
 
 interface Question {
   id: number;

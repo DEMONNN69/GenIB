@@ -40,20 +40,19 @@ const HeroSection: React.FC<HeroSectionProps> = ({ stats }) => {
 
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
-                to="/papers"
+                to="/register"
                 className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center justify-center space-x-2"
               >
                 <Book variant="Bold" size={20} />
-                <span>Start Practicing</span>
+                <span>Get Started Free</span>
                 <ArrowRightIcon className="h-4 w-4" />
               </Link>
               
               <Link
-                to="/questions"
+                to="/login"
                 className="border-2 border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 flex items-center justify-center space-x-2"
               >
-                <MessageQuestion variant="Bold" size={20} />
-                <span>Explore Questions</span>
+                <span>Sign In</span>
               </Link>
             </div>
 

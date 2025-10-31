@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { UserIcon, PencilIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { fetchProfile, updateProfile } from '../utils/api';
+// import { fetchProfile, updateProfile } from '../utils/api';
 
 interface ProfileData {
   id: number;

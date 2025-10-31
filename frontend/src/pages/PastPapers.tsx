@@ -3,7 +3,7 @@ import FilterBar from '../components/FilterBar';
 import PaperCategorySidebar from '../components/PaperCategorySidebar';
 import PaperList from '../components/PaperList';
 import PDFViewer from '../components/PDFViewer';
-import { fetchPapers, toggleFavorite } from '../utils/api';
+// import { fetchPapers, toggleFavorite } from '../utils/api';
 
 // TypeScript interfaces
 interface Paper {

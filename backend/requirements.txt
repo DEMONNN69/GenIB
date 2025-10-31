@@ -1,0 +1,25 @@
+# Core Django
+Django
+djangorestframework
+django-cors-headers
+
+# Authentication
+djangorestframework-simplejwt
+django-allauth
+
+
+
+# Environment
+python-decouple
+python-dotenv
+
+# Security
+django-ratelimit
+django-defender
+
+# Utilities
+pytz
+pillow
+
+# Development
+django-debug-toolbar
