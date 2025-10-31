@@ -12,6 +12,8 @@ import Favorites from './pages/Favorites.tsx';
 import Profile from './pages/Profile.tsx';
 import QuestionDetail from './components/QuestionDetail.tsx';
 import PaperDetail from './components/PaperDetail.tsx';
+import { AuthProvider } from './contexts/AuthContext';
+import { ProtectedRoute, PublicOnlyRoute } from './guards/RouteGuards';
 
 function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -40,15 +42,78 @@ function AppContent() {
         <main className={`flex-1 ${!hideSidebar ? '' : ''}`}>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/questions" element={<QuestionBank />} />
-            <Route path="/questions/:id" element={<QuestionDetail />} />
-            <Route path="/papers" element={<PastPapers />} />
-            <Route path="/papers/:id" element={<PaperDetail />} />
-            <Route path="/exam-builder" element={<ExamBuilder />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/profile" element={<Profile />} />
+            <Route 
+              path="/login" 
+              element={
+                <PublicOnlyRoute>
+                  <Login />
+                </PublicOnlyRoute>
+              } 
+            />
+            <Route 
+              path="/register" 
+              element={
+                <PublicOnlyRoute>
+                  <Register />
+                </PublicOnlyRoute>
+              } 
+            />
+            <Route 
+              path="/questions" 
+              element={
+                <ProtectedRoute>
+                  <QuestionBank />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/questions/:id" 
+              element={
+                <ProtectedRoute>
+                  <QuestionDetail />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/papers" 
+              element={
+                <ProtectedRoute>
+                  <PastPapers />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/papers/:id" 
+              element={
+                <ProtectedRoute>
+                  <PaperDetail />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/exam-builder" 
+              element={
+                <ProtectedRoute>
+                  <ExamBuilder />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/favorites" 
+              element={
+                <ProtectedRoute>
+                  <Favorites />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/profile" 
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
         </main>
       </div>
@@ -58,9 +123,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
   );
 }
 

@@ -90,12 +90,21 @@ export const login = async (data: LoginData): Promise<LoginResponse> => {
   }
 
   const result = await response.json();
+  console.log('Login API response:', result);
+  
+  // Backend returns data in nested structure
+  const tokens = result.data?.tokens || result.tokens || {};
+  const user = result.data?.user || result.user || {};
   
   // Store tokens in localStorage
-  localStorage.setItem('access_token', result.access);
-  localStorage.setItem('refresh_token', result.refresh);
+  localStorage.setItem('access_token', tokens.access);
+  localStorage.setItem('refresh_token', tokens.refresh);
   
-  return result;
+  return {
+    access: tokens.access,
+    refresh: tokens.refresh,
+    user: user
+  };
 };
 
 // Logout user

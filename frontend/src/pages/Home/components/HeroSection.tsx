@@ -4,12 +4,15 @@ import { AcademicCapIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import { Book, MessageQuestion } from 'iconsax-react';
 import Stats from './Stats';
 import type { Stat } from '../data/homeData';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface HeroSectionProps {
   stats: Stat[];
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ stats }) => {
+  const { isLoggedIn } = useAuth();
+
   return (
     <section className="bg-white py-16 lg:py-20">
       <div className="container mx-auto px-8">
@@ -39,21 +42,43 @@ const HeroSection: React.FC<HeroSectionProps> = ({ stats }) => {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                to="/register"
-                className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center justify-center space-x-2"
-              >
-                <Book variant="Bold" size={20} />
-                <span>Get Started Free</span>
-                <ArrowRightIcon className="h-4 w-4" />
-              </Link>
-              
-              <Link
-                to="/login"
-                className="border-2 border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 flex items-center justify-center space-x-2"
-              >
-                <span>Sign In</span>
-              </Link>
+              {isLoggedIn ? (
+                <>
+                  <Link
+                    to="/papers"
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <Book variant="Bold" size={20} />
+                    <span>Browse Past Papers</span>
+                    <ArrowRightIcon className="h-4 w-4" />
+                  </Link>
+                  
+                  <Link
+                    to="/questions"
+                    className="border-2 border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <span>Practice Questions</span>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/register"
+                    className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <Book variant="Bold" size={20} />
+                    <span>Get Started Free</span>
+                    <ArrowRightIcon className="h-4 w-4" />
+                  </Link>
+                  
+                  <Link
+                    to="/login"
+                    className="border-2 border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <span>Sign In</span>
+                  </Link>
+                </>
+              )}
             </div>
 
             <Stats stats={stats} />

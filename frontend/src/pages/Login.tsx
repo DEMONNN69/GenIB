@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { login } from '../utils/authApi';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login: loginUser } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -27,8 +30,13 @@ const Login: React.FC = () => {
     try {
       const response = await login(formData);
       console.log('Login successful:', response);
-      // Redirect to home or dashboard after successful login
-      navigate('/');
+      
+      // Update auth context with user data
+      loginUser(response.user);
+      
+      // Redirect to the page they were trying to access or home
+      const from = (location.state as any)?.from?.pathname || '/';
+      navigate(from, { replace: true });
     } catch (err: any) {
       console.error('Login error:', err);
       try {
