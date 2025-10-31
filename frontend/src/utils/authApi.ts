@@ -66,12 +66,14 @@ export const register = async (data: RegisterData): Promise<any> => {
     body: JSON.stringify(data),
   });
 
+  const result = await response.json();
+  console.log('Register API response:', result);
+
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(JSON.stringify(error));
+    throw new Error(JSON.stringify(result.errors || result));
   }
 
-  return await response.json();
+  return result;
 };
 
 // Login user

@@ -5,6 +5,7 @@ import Sidebar from './components/Sidebar.tsx';
 import Home from './pages/Home';
 import Login from './pages/Login.tsx';
 import Register from './pages/Register.tsx';
+import Onboarding from './pages/Onboarding.tsx';
 import QuestionBank from './pages/QuestionBank.tsx';
 import PastPapers from './pages/PastPapers.tsx';
 import ExamBuilder from './pages/ExamBuilder.tsx';
@@ -23,8 +24,10 @@ function AppContent() {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Hide navbar and sidebar on auth pages
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  // Hide navbar and sidebar on auth pages and onboarding
+  const isAuthPage = location.pathname === '/login' || 
+                     location.pathname === '/register' || 
+                     location.pathname === '/onboarding';
   
   // Hide main sidebar on Home page and Past Papers page since they have their own layouts
   const hideSidebar = location.pathname === '/' || 
@@ -56,6 +59,14 @@ function AppContent() {
                 <PublicOnlyRoute>
                   <Register />
                 </PublicOnlyRoute>
+              } 
+            />
+            <Route 
+              path="/onboarding" 
+              element={
+                <ProtectedRoute>
+                  <Onboarding />
+                </ProtectedRoute>
               } 
             />
             <Route 

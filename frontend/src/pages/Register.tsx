@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../utils/authApi';
+import { useAuth } from '../contexts/AuthContext';
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const { login: loginUser } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     username: '',
@@ -12,6 +14,7 @@ const Register: React.FC = () => {
   });
   const [errors, setErrors] = useState<any>({});
   const [loading, setLoading] = useState(false);
+  const [debugMessage, setDebugMessage] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -42,8 +45,33 @@ const Register: React.FC = () => {
     try {
       const response = await register(formData);
       console.log('Registration successful:', response);
-      // Redirect to login page after successful registration
-      navigate('/login');
+      setDebugMessage('Registration successful! Setting up your account...');
+      
+      // Backend returns tokens and user data on registration
+      if (response.data && response.data.tokens && response.data.user) {
+        const { tokens, user } = response.data;
+        
+        setDebugMessage('Storing authentication tokens...');
+        // Store tokens
+        localStorage.setItem('access_token', tokens.access);
+        localStorage.setItem('refresh_token', tokens.refresh);
+        
+        setDebugMessage('Logging you in...');
+        // Update auth context
+        loginUser(user);
+        
+        console.log('User logged in, navigating to onboarding...');
+        setDebugMessage('Redirecting to onboarding...');
+        
+        // Small delay to show the message
+        setTimeout(() => {
+          navigate('/onboarding', { replace: true });
+        }, 500);
+      } else {
+        console.error('Unexpected response format:', response);
+        setDebugMessage('Error: Unexpected response format');
+        setTimeout(() => navigate('/login'), 2000);
+      }
     } catch (err: any) {
       console.error('Registration error:', err);
       try {
@@ -70,6 +98,13 @@ const Register: React.FC = () => {
         {errors.general && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
             {errors.general[0]}
+          </div>
+        )}
+
+        {/* Debug/Success Message */}
+        {debugMessage && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg">
+            {debugMessage}
           </div>
         )}
 
