@@ -229,24 +229,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             )}
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="absolute bottom-0 w-full p-4 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-teal-50">
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-2">
-              <div className="bg-blue-600 text-white p-2 rounded-lg">
-                <DynamicIcon name="Building" variant="Bold" size={24} />
-              </div>
-            </div>
-            <h3 className="text-sm font-medium text-gray-900 mb-1">For Schools</h3>
-            <p className="text-xs text-gray-600 mb-3">
-              Get access to premium content and advanced features for your institution
-            </p>
-            <button className="w-full bg-blue-600 text-white text-xs font-medium py-2 px-3 rounded-md hover:bg-blue-700 transition-colors">
-              Learn More
-            </button>
-          </div>
-        </div>
       </div>
     </>
   );
