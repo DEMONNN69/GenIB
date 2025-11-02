@@ -3,6 +3,7 @@
  */
 
 import { BASE_URL_GLOBAL } from './api.ts';
+import { fetchWithAuth } from './apiInterceptor';
 
 const BASE_URL = `${BASE_URL_GLOBAL}/filters`;
 
@@ -49,11 +50,8 @@ export interface FilterTypeResponse {
  * This is the main endpoint for the frontend filters
  */
 export const getAllFilterTypes = async (): Promise<FilterType[]> => {
-  const response = await fetch(`${BASE_URL}/types/`, {
+  const response = await fetchWithAuth(`${BASE_URL}/types/`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!response.ok) {
@@ -68,11 +66,8 @@ export const getAllFilterTypes = async (): Promise<FilterType[]> => {
  * Get a single filter type by ID with its options
  */
 export const getFilterTypeById = async (typeId: number): Promise<FilterType> => {
-  const response = await fetch(`${BASE_URL}/types/${typeId}/`, {
+  const response = await fetchWithAuth(`${BASE_URL}/types/${typeId}/`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!response.ok) {
@@ -87,11 +82,8 @@ export const getFilterTypeById = async (typeId: number): Promise<FilterType> => 
  * Get options for a specific filter type by slug
  */
 export const getFilterOptionsBySlug = async (slug: string): Promise<FilterOption[]> => {
-  const response = await fetch(`${BASE_URL}/types/${slug}/options/`, {
+  const response = await fetchWithAuth(`${BASE_URL}/types/${slug}/options/`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!response.ok) {
@@ -106,11 +98,8 @@ export const getFilterOptionsBySlug = async (slug: string): Promise<FilterOption
  * Search filter options across all types
  */
 export const searchFilterOptions = async (query: string): Promise<FilterOption[]> => {
-  const response = await fetch(`${BASE_URL}/options/search/?q=${encodeURIComponent(query)}`, {
+  const response = await fetchWithAuth(`${BASE_URL}/options/search/?q=${encodeURIComponent(query)}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!response.ok) {

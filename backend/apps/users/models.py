@@ -55,6 +55,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
     grade_level = models.CharField(_('grade level'), max_length=20, blank=True)
     school = models.CharField(_('school'), max_length=255, blank=True)
+    subjects = models.JSONField(
+        _('subjects'),
+        default=list,
+        blank=True,
+        help_text=_('List of subjects the user is studying')
+    )
     
     # Status Fields
     is_active = models.BooleanField(
@@ -117,3 +123,31 @@ class User(AbstractBaseUser, PermissionsMixin):
         if self.premium_expires_at and self.premium_expires_at < timezone.now():
             return False
         return True
+
+
+class Favorite(models.Model):
+    """
+    Model to track user's favorite papers
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favorites'
+    )
+    paper = models.ForeignKey(
+        'papers.Paper',
+        on_delete=models.CASCADE,
+        related_name='favorited_by'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['user', 'paper']
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['paper']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.paper.title}"

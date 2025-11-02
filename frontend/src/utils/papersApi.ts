@@ -4,6 +4,7 @@
  */
 
 import { BASE_URL_GLOBAL } from './api';
+import { fetchWithAuth } from './apiInterceptor';
 
 const BASE_URL = `${BASE_URL_GLOBAL}/papers`;
 
@@ -75,6 +76,7 @@ export interface PaperFilters {
 
 /**
  * Get all papers with optional filters
+ * Note: This endpoint is public (no auth required)
  */
 export const getAllPapers = async (filters?: PaperFilters): Promise<PapersResponse> => {
   try {
@@ -92,10 +94,11 @@ export const getAllPapers = async (filters?: PaperFilters): Promise<PapersRespon
     if (filters?.page_size) params.append('page_size', filters.page_size.toString());
     
     const url = `${BASE_URL}/papers/${params.toString() ? `?${params.toString()}` : ''}`;
-    const response = await fetch(url);
+    const response = await fetchWithAuth(url, { method: 'GET' });
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const error = await response.json();
+      throw new Error(JSON.stringify(error));
     }
     
     return await response.json();
@@ -110,10 +113,13 @@ export const getAllPapers = async (filters?: PaperFilters): Promise<PapersRespon
  */
 export const getPaperById = async (paperId: number): Promise<PaperDetailResponse> => {
   try {
-    const response = await fetch(`${BASE_URL}/papers/${paperId}/`);
+    const response = await fetchWithAuth(`${BASE_URL}/papers/${paperId}/`, {
+      method: 'GET',
+    });
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const error = await response.json();
+      throw new Error(JSON.stringify(error));
     }
     
     return await response.json();
@@ -128,7 +134,7 @@ export const getPaperById = async (paperId: number): Promise<PaperDetailResponse
  */
 export const downloadPaper = async (paperId: number): Promise<{ success: boolean; data: { pdf_url: string; downloads_count: number } }> => {
   try {
-    const response = await fetch(`${BASE_URL}/papers/${paperId}/download/`, {
+    const response = await fetchWithAuth(`${BASE_URL}/papers/${paperId}/download/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -136,7 +142,8 @@ export const downloadPaper = async (paperId: number): Promise<{ success: boolean
     });
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const error = await response.json();
+      throw new Error(JSON.stringify(error));
     }
     
     const data = await response.json();
@@ -168,10 +175,13 @@ export const searchPapers = async (query: string): Promise<{ success: boolean; d
       return { success: false, data: [], count: 0 };
     }
     
-    const response = await fetch(`${BASE_URL}/papers/search/?q=${encodeURIComponent(query)}`);
+    const response = await fetchWithAuth(`${BASE_URL}/papers/search/?q=${encodeURIComponent(query)}`, {
+      method: 'GET',
+    });
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const error = await response.json();
+      throw new Error(JSON.stringify(error));
     }
     
     return await response.json();

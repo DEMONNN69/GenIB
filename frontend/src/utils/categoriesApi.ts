@@ -2,6 +2,7 @@
  * API functions for Paper Categories
  */
 import { BASE_URL_GLOBAL} from './api.ts';
+import { fetchWithAuth } from './apiInterceptor';
 
 const BASE_URL = `${BASE_URL_GLOBAL}/papers`;
 
@@ -41,11 +42,8 @@ export interface CategoryResponse {
  * Get all root categories (no parent)
  */
 export const getAllCategories = async (): Promise<Category[]> => {
-  const response = await fetch(`${BASE_URL}/categories/`, {
+  const response = await fetchWithAuth(`${BASE_URL}/categories/`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!response.ok) {
@@ -60,11 +58,8 @@ export const getAllCategories = async (): Promise<Category[]> => {
  * Get category tree with nested subcategories
  */
 export const getCategoryTree = async (): Promise<CategoryTree[]> => {
-  const response = await fetch(`${BASE_URL}/categories/tree/`, {
+  const response = await fetchWithAuth(`${BASE_URL}/categories/tree/`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!response.ok) {
@@ -79,11 +74,8 @@ export const getCategoryTree = async (): Promise<CategoryTree[]> => {
  * Get a single category by ID
  */
 export const getCategoryById = async (categoryId: number): Promise<Category> => {
-  const response = await fetch(`${BASE_URL}/categories/${categoryId}/`, {
+  const response = await fetchWithAuth(`${BASE_URL}/categories/${categoryId}/`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!response.ok) {
@@ -98,11 +90,8 @@ export const getCategoryById = async (categoryId: number): Promise<Category> => 
  * Get all subcategories of a parent category
  */
 export const getSubcategories = async (parentId: number): Promise<Category[]> => {
-  const response = await fetch(`${BASE_URL}/categories/${parentId}/subcategories/`, {
+  const response = await fetchWithAuth(`${BASE_URL}/categories/${parentId}/subcategories/`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!response.ok) {
@@ -117,11 +106,8 @@ export const getSubcategories = async (parentId: number): Promise<Category[]> =>
  * Search categories by name or description
  */
 export const searchCategories = async (query: string): Promise<Category[]> => {
-  const response = await fetch(`${BASE_URL}/categories/search/?q=${encodeURIComponent(query)}`, {
+  const response = await fetchWithAuth(`${BASE_URL}/categories/search/?q=${encodeURIComponent(query)}`, {
     method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
   });
 
   if (!response.ok) {
@@ -135,13 +121,9 @@ export const searchCategories = async (query: string): Promise<Category[]> => {
 /**
  * Create a new category (admin only)
  */
-export const createCategory = async (categoryData: Partial<Category>, token: string): Promise<Category> => {
-  const response = await fetch(`${BASE_URL}/categories/`, {
+export const createCategory = async (categoryData: Partial<Category>): Promise<Category> => {
+  const response = await fetchWithAuth(`${BASE_URL}/categories/`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
     body: JSON.stringify(categoryData),
   });
 
@@ -158,15 +140,10 @@ export const createCategory = async (categoryData: Partial<Category>, token: str
  */
 export const updateCategory = async (
   categoryId: number,
-  categoryData: Partial<Category>,
-  token: string
+  categoryData: Partial<Category>
 ): Promise<Category> => {
-  const response = await fetch(`${BASE_URL}/categories/${categoryId}/`, {
+  const response = await fetchWithAuth(`${BASE_URL}/categories/${categoryId}/`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    },
     body: JSON.stringify(categoryData),
   });
 
@@ -181,12 +158,9 @@ export const updateCategory = async (
 /**
  * Delete a category (admin only - soft delete)
  */
-export const deleteCategory = async (categoryId: number, token: string): Promise<void> => {
-  const response = await fetch(`${BASE_URL}/categories/${categoryId}/`, {
+export const deleteCategory = async (categoryId: number): Promise<void> => {
+  const response = await fetchWithAuth(`${BASE_URL}/categories/${categoryId}/`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
   });
 
   if (!response.ok) {

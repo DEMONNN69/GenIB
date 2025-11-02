@@ -9,12 +9,13 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.shortcuts import get_object_or_404
 
-from .models import User
+from .models import User, Favorite
 from .serializers import (
     UserSerializer,
     UserProfileSerializer,
     UserUpdateSerializer,
-    UserListSerializer
+    UserListSerializer,
+    FavoriteWithPaperSerializer
 )
 from .services import UserService
 
@@ -122,4 +123,95 @@ class UserSearchView(APIView):
             'success': True,
             'data': serializer.data,
             'count': users.count()
+        }, status=status.HTTP_200_OK)
+
+
+class UserFavoritesListView(APIView):
+    """
+    GET: List all favorite papers for the authenticated user
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        """Get user's favorite papers"""
+        favorites = Favorite.objects.filter(
+            user=request.user
+        ).select_related('paper__category').prefetch_related('paper__filters')
+        
+        serializer = FavoriteWithPaperSerializer(
+            favorites, 
+            many=True, 
+            context={'request': request}
+        )
+        
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'count': favorites.count()
+        }, status=status.HTTP_200_OK)
+
+
+class ToggleFavoriteView(APIView):
+    """
+    POST: Toggle favorite status for a paper (add if not exists, remove if exists)
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        """Toggle favorite for a paper"""
+        paper_id = request.data.get('paper_id')
+        
+        if not paper_id:
+            return Response({
+                'success': False,
+                'message': 'paper_id is required'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        from apps.papers.models import Paper
+        
+        try:
+            paper = Paper.objects.get(id=paper_id, is_active=True)
+        except Paper.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Paper not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        # Check if favorite exists
+        favorite = Favorite.objects.filter(user=request.user, paper=paper).first()
+        
+        if favorite:
+            # Remove favorite
+            favorite.delete()
+            return Response({
+                'success': True,
+                'message': 'Paper removed from favorites',
+                'is_favorited': False
+            }, status=status.HTTP_200_OK)
+        else:
+            # Add favorite
+            Favorite.objects.create(user=request.user, paper=paper)
+            return Response({
+                'success': True,
+                'message': 'Paper added to favorites',
+                'is_favorited': True
+            }, status=status.HTTP_201_CREATED)
+
+
+class CheckFavoriteView(APIView):
+    """
+    GET: Check if a paper is favorited by the authenticated user
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, paper_id):
+        """Check if paper is favorited"""
+        is_favorited = Favorite.objects.filter(
+            user=request.user,
+            paper_id=paper_id
+        ).exists()
+        
+        return Response({
+            'success': True,
+            'is_favorited': is_favorited
         }, status=status.HTTP_200_OK)

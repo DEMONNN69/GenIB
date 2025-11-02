@@ -29,8 +29,8 @@ function AppContent() {
                      location.pathname === '/register' || 
                      location.pathname === '/onboarding';
   
-  // Hide main sidebar on Home page only (show on /papers)
-  const hideSidebar = location.pathname === '/' || isAuthPage;
+  // Show sidebar on all pages except auth pages
+  const hideSidebar = isAuthPage;
 
   return (
     <div className="min-h-screen bg-gray-50">

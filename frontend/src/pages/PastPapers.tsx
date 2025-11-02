@@ -5,6 +5,7 @@ import PaperList from '../components/PaperList';
 import PDFViewer from '../components/PDFViewer';
 import { getAllFilterTypes, mapFiltersForFrontend } from '../utils/filtersApi';
 import { getAllPapers, getPaperById, downloadPaper, type Paper as ApiPaper, type PaperDetail } from '../utils/papersApi';
+import { toggleFavorite, checkMultipleFavorites } from '../utils/favoritesApi';
 
 // TypeScript interfaces
 interface Paper {
@@ -120,7 +121,7 @@ const PastPapers: React.FC = () => {
     try {
       // Build filter slugs from selected filter values
       const filterSlugs: string[] = [];
-      Object.entries(filters).forEach(([key, value]) => {
+      Object.entries(filters).forEach(([, value]) => {
         if (value) {
           filterSlugs.push(value); // value is the slug
         }
@@ -140,7 +141,22 @@ const PastPapers: React.FC = () => {
       
       if (response.success) {
         const mappedPapers = response.data.map(mapApiPaperToFrontend);
-        setPapers(mappedPapers);
+        
+        // Check favorite status for all papers
+        const paperIds = mappedPapers.map(p => p.id);
+        try {
+          const favoriteMap = await checkMultipleFavorites(paperIds);
+          const papersWithFavorites = mappedPapers.map(paper => ({
+            ...paper,
+            isFavorite: favoriteMap.get(paper.id) || false
+          }));
+          setPapers(papersWithFavorites);
+        } catch (error) {
+          console.error('Error loading favorite status:', error);
+          // Set papers without favorite status if check fails
+          setPapers(mappedPapers);
+        }
+        
         setTotalCount(response.count);
         setTotalPages(response.total_pages);
       }
@@ -170,10 +186,15 @@ const PastPapers: React.FC = () => {
 
   const handleToggleFavorite = async (paperId: number): Promise<void> => {
     try {
-      // await toggleFavorite('paper', paperId);
+      const result = await toggleFavorite(paperId);
+      // Update local state to reflect the change
       setPapers(prev => prev.map(p => 
-        p.id === paperId ? { ...p, isFavorite: !p.isFavorite } : p
+        p.id === paperId ? { ...p, isFavorite: result.is_favorited } : p
       ));
+      // Update selected paper if it's the one being toggled
+      if (selectedPaper && selectedPaper.id === paperId) {
+        setSelectedPaper({ ...selectedPaper, isFavorite: result.is_favorited });
+      }
     } catch (error) {
       console.error('Error toggling favorite:', error);
     }

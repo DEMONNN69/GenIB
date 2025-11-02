@@ -5,7 +5,7 @@ Admin configuration for Users app
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
-from .models import User
+from .models import User, Favorite
 
 
 @admin.register(User)
@@ -53,3 +53,18 @@ class UserAdmin(BaseUserAdmin):
     )
     
     readonly_fields = ['date_joined', 'last_login']
+
+
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    """Admin for Favorite model"""
+    
+    list_display = ['user', 'paper', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['user__email', 'user__username', 'paper__title']
+    readonly_fields = ['created_at']
+    
+    def get_queryset(self, request):
+        """Optimize queryset with select_related"""
+        qs = super().get_queryset(request)
+        return qs.select_related('user', 'paper')

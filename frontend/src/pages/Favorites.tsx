@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { HeartIcon, EyeIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
-// import { fetchFavorites } from '../utils/api';
+import { getUserFavorites, toggleFavorite, type FavoritePaper } from '../utils/favoritesApi';
 
 interface Question {
   id: number;
@@ -36,6 +36,33 @@ interface FavoritesData {
   papers: Paper[];
 }
 
+// Helper function to map API response to frontend Paper interface
+const mapFavoriteToPaper = (favorite: FavoritePaper): Paper => {
+  const getCurriculum = () => favorite.paper.filters.find(f => f.filter_type_slug === 'curriculum')?.name || favorite.paper.category_name;
+  const getSubject = () => favorite.paper.filters.find(f => f.filter_type_slug === 'subject')?.name || 'N/A';
+  const getSeason = () => favorite.paper.filters.find(f => f.filter_type_slug === 'season')?.name || 'N/A';
+  const getYear = () => {
+    const yearFilter = favorite.paper.filters.find(f => f.filter_type_slug === 'year');
+    return yearFilter ? parseInt(yearFilter.name) : new Date().getFullYear();
+  };
+  const getZone = () => favorite.paper.filters.find(f => f.filter_type_slug === 'zone')?.name;
+  
+  return {
+    id: favorite.paper.id,
+    title: favorite.paper.title,
+    curriculum: getCurriculum(),
+    subject: getSubject(),
+    paperNumber: favorite.paper.title.split(' ').pop() || 'P1',
+    year: getYear(),
+    season: getSeason(),
+    zone: getZone(),
+    duration: undefined,
+    type: 'question',
+    isFavorite: true,
+    totalPages: favorite.paper.page_count || undefined,
+  };
+};
+
 const Favorites: React.FC = () => {
   const [favorites, setFavorites] = useState<FavoritesData>({ questions: [], papers: [] });
   const [loading, setLoading] = useState(true);
@@ -48,12 +75,29 @@ const Favorites: React.FC = () => {
   const loadFavorites = async () => {
     setLoading(true);
     try {
-      const data = await fetchFavorites();
-      setFavorites(data as FavoritesData);
+      const response = await getUserFavorites();
+      if (response.success) {
+        const papers = response.data.map(mapFavoriteToPaper);
+        setFavorites({ questions: [], papers });
+      }
     } catch (error) {
       console.error('Error loading favorites:', error);
+      setFavorites({ questions: [], papers: [] });
     }
     setLoading(false);
+  };
+
+  const handleRemoveFavorite = async (paperId: number) => {
+    try {
+      await toggleFavorite(paperId);
+      // Remove from local state
+      setFavorites(prev => ({
+        ...prev,
+        papers: prev.papers.filter(p => p.id !== paperId)
+      }));
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+    }
   };
 
   const TabButton: React.FC<{ 
@@ -207,7 +251,13 @@ const Favorites: React.FC = () => {
                     <div className="p-3 bg-blue-50 rounded-lg">
                       <DocumentTextIcon className="h-6 w-6 text-blue-600" />
                     </div>
-                    <HeartIcon className="h-5 w-5 text-red-600 fill-current" />
+                    <button
+                      onClick={() => handleRemoveFavorite(paper.id)}
+                      className="text-red-600 hover:text-red-700"
+                      title="Remove from favorites"
+                    >
+                      <HeartIcon className="h-5 w-5 fill-current" />
+                    </button>
                   </div>
 
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{paper.title}</h3>
