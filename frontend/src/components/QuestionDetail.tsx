@@ -32,16 +32,7 @@ const QuestionDetail: React.FC = () => {
   const loadQuestion = async () => {
     if (!id) return;
     
-    setLoading(true);
-    try {
-      const data = await fetchQuestionById(id);
-      setQuestion(data ? data as Question : null);
-    } catch (error) {
-      console.error('Error loading question:', error);
-    }
-    setLoading(false);
-  };
-
+     
   const handleToggleFavorite = async () => {
     if (!question) return;
     
@@ -185,5 +176,6 @@ const QuestionDetail: React.FC = () => {
     </div>
   );
 };
+}
 
 export default QuestionDetail;

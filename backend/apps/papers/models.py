@@ -74,8 +74,7 @@ class Category(models.Model):
     @property
     def paper_count(self):
         """Return count of papers in this category (including subcategories)"""
-        # Will implement when Paper model is created
-        return 0
+        return self.papers.filter(is_active=True).count()
     
     @property
     def full_path(self):
@@ -95,4 +94,112 @@ class Category(models.Model):
         for subcat in list(subcats):
             subcats.extend(subcat.get_all_subcategories())
         return subcats
+
+
+class Paper(models.Model):
+    """
+    Paper model for storing past papers, worksheets, etc.
+    Uses dynamic filters from the filters app
+    """
+    
+    # Basic Information
+    title = models.CharField(max_length=255, help_text="e.g., Mathematics Paper 1")
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name='papers',
+        help_text="Category this paper belongs to"
+    )
+    description = models.TextField(blank=True)
+    
+    # File Upload
+    pdf_file = models.FileField(
+        upload_to='papers/%Y/%m/',
+        help_text="Upload PDF file"
+    )
+    thumbnail = models.ImageField(
+        upload_to='thumbnails/%Y/%m/',
+        blank=True,
+        null=True,
+        help_text="Thumbnail image for the paper"
+    )
+    
+    # Dynamic Filters (ManyToMany to FilterOption)
+    filters = models.ManyToManyField(
+        'filters.FilterOption',
+        related_name='papers',
+        blank=True,
+        help_text="Select applicable filters (curriculum, subject, year, etc.)"
+    )
+    
+    # Metadata
+    file_size = models.IntegerField(
+        blank=True,
+        null=True,
+        help_text="File size in bytes (auto-calculated)"
+    )
+    page_count = models.IntegerField(
+        blank=True,
+        null=True,
+        help_text="Number of pages in PDF"
+    )
+    
+    # Access Control
+    is_free = models.BooleanField(
+        default=True,
+        help_text="Is this paper free to access?"
+    )
+    is_premium = models.BooleanField(
+        default=False,
+        help_text="Requires premium subscription?"
+    )
+    
+    # Status
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(
+        default=False,
+        help_text="Show in featured section?"
+    )
+    
+    # Statistics
+    views_count = models.IntegerField(default=0)
+    downloads_count = models.IntegerField(default=0)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Paper'
+        verbose_name_plural = 'Papers'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['category', 'is_active']),
+            models.Index(fields=['is_featured', 'is_active']),
+            models.Index(fields=['-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} - {self.category.name}"
+    
+    def save(self, *args, **kwargs):
+        """Auto-calculate file size if not provided"""
+        if self.pdf_file and not self.file_size:
+            self.file_size = self.pdf_file.size
+        super().save(*args, **kwargs)
+    
+    @property
+    def file_size_mb(self):
+        """Return file size in MB"""
+        if self.file_size:
+            return round(self.file_size / (1024 * 1024), 2)
+        return 0
+    
+    def get_filter_values(self, filter_type_slug):
+        """Get filter options for a specific filter type"""
+        return self.filters.filter(
+            filter_type__slug=filter_type_slug,
+            filter_type__is_active=True,
+            is_active=True
+        )
 

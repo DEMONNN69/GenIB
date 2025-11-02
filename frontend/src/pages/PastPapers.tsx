@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import FilterBar from '../components/FilterBar';
 import PaperList from '../components/PaperList';
 import PDFViewer from '../components/PDFViewer';
-// import { fetchPapers, toggleFavorite } from '../utils/api';
+import { getAllFilterTypes, mapFiltersForFrontend } from '../utils/filtersApi';
+import { getAllPapers, getPaperById, downloadPaper, type Paper as ApiPaper, type PaperDetail } from '../utils/papersApi';
 
 // TypeScript interfaces
 interface Paper {
@@ -18,20 +20,17 @@ interface Paper {
   type: 'question' | 'marking-scheme' | 'examiner-report';
   isFavorite: boolean;
   totalPages?: number;
+  pdfUrl?: string;
 }
 
 interface FilterState extends Record<string, string> {
-  curriculum: string;
-  subject: string;
-  paper: string;
-  year: string;
-  season: string;
-  zone: string;
+  [key: string]: string;
 }
 
 interface FilterOption {
   value: string;
   label: string;
+  code?: string;
 }
 
 interface FilterConfig {
@@ -39,6 +38,8 @@ interface FilterConfig {
   label: string;
   placeholder: string;
   options: FilterOption[];
+  isRequired?: boolean;
+  allowMultiple?: boolean;
 }
 
 const PastPapers: React.FC = () => {
@@ -48,85 +49,67 @@ const PastPapers: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
-  const [filters, setFilters] = useState<FilterState>({
-    curriculum: '',
-    subject: '',
-    paper: '',
-    year: '',
-    season: '',
-    zone: ''
-  });
+  const [filters, setFilters] = useState<FilterState>({});
+  const [filterConfigs, setFilterConfigs] = useState<FilterConfig[]>([]);
+  const [loadingFilters, setLoadingFilters] = useState<boolean>(true);
+  const [totalPages, setTotalPages] = useState<number>(0);
+  const [totalCount, setTotalCount] = useState<number>(0);
+
+  // Convert API paper to frontend Paper format
+  const mapApiPaperToFrontend = (apiPaper: ApiPaper): Paper => {
+    const getCurriculum = () => apiPaper.filters.find(f => f.filter_type_slug === 'curriculum')?.name || apiPaper.category_name;
+    const getSubject = () => apiPaper.filters.find(f => f.filter_type_slug === 'subject')?.name || 'N/A';
+    const getSeason = () => apiPaper.filters.find(f => f.filter_type_slug === 'season')?.name || 'N/A';
+    const getYear = () => {
+      const yearFilter = apiPaper.filters.find(f => f.filter_type_slug === 'year');
+      return yearFilter ? parseInt(yearFilter.name) : new Date().getFullYear();
+    };
+    const getZone = () => apiPaper.filters.find(f => f.filter_type_slug === 'zone')?.name;
+    
+    return {
+      id: apiPaper.id,
+      title: apiPaper.title,
+      curriculum: getCurriculum(),
+      subject: getSubject(),
+      paperNumber: apiPaper.title.split(' ').pop() || 'P1',
+      year: getYear(),
+      season: getSeason(),
+      zone: getZone(),
+      duration: undefined,
+      type: 'question',
+      isFavorite: false,
+      totalPages: apiPaper.page_count || undefined,
+      pdfUrl: apiPaper.pdf_url || undefined,
+    };
+  };
+
+  // Load filter configurations from backend
+  useEffect(() => {
+    const loadFilters = async () => {
+      try {
+        setLoadingFilters(true);
+        const filterTypes = await getAllFilterTypes();
+        const configs = mapFiltersForFrontend(filterTypes);
+        setFilterConfigs(configs);
+        
+        // Initialize filter state with empty values
+        const initialFilters: FilterState = {};
+        configs.forEach(config => {
+          initialFilters[config.key] = '';
+        });
+        setFilters(initialFilters);
+      } catch (error) {
+        console.error('Error loading filters:', error);
+      } finally {
+        setLoadingFilters(false);
+      }
+    };
+
+    loadFilters();
+  }, []);
 
   // Filter configurations for the filter bar
-  const filterConfigs: FilterConfig[] = [
-    {
-      key: 'curriculum',
-      label: 'Curriculum',
-      placeholder: 'Select Curriculum',
-      options: [
-        { value: 'CIE IGCSE', label: 'CIE IGCSE' },
-        { value: 'CIE A-Level', label: 'CIE A-Level' },
-        { value: 'Edexcel IGCSE', label: 'Edexcel IGCSE' },
-        { value: 'Edexcel A-Level', label: 'Edexcel A-Level' }
-      ]
-    },
-    {
-      key: 'subject',
-      label: 'Subject',
-      placeholder: 'Select Subject',
-      options: [
-        { value: 'Accounting 9-1(0985)', label: 'Accounting 9-1(0985)' },
-        { value: 'Biology 9-1(0970)', label: 'Biology 9-1(0970)' },
-        { value: 'Mathematics 9-1(0980)', label: 'Mathematics 9-1(0980)' },
-        { value: 'Chemistry 9-1(0971)', label: 'Chemistry 9-1(0971)' },
-        { value: 'Physics 9-1(0972)', label: 'Physics 9-1(0972)' }
-      ]
-    },
-    {
-      key: 'paper',
-      label: 'Paper',
-      placeholder: 'Select Paper',
-      options: [
-        { value: 'Paper 1', label: 'Paper 1' },
-        { value: 'Paper 2', label: 'Paper 2' },
-        { value: 'Paper 3', label: 'Paper 3' },
-        { value: 'Paper 4', label: 'Paper 4' }
-      ]
-    },
-    {
-      key: 'year',
-      label: 'Year',
-      placeholder: 'Select Year',
-      options: [
-        { value: '2025', label: '2025' },
-        { value: '2024', label: '2024' },
-        { value: '2023', label: '2023' },
-        { value: '2022', label: '2022' },
-        { value: '2021', label: '2021' }
-      ]
-    },
-    {
-      key: 'season',
-      label: 'Season',
-      placeholder: 'Select Season',
-      options: [
-        { value: 'May/June', label: 'May/June' },
-        { value: 'Oct/Nov', label: 'Oct/Nov' },
-        { value: 'Feb/Mar', label: 'Feb/Mar' }
-      ]
-    },
-    {
-      key: 'zone',
-      label: 'Zone',
-      placeholder: 'Select Zone',
-      options: [
-        { value: 'Zone 1', label: 'Zone 1' },
-        { value: 'Zone 2', label: 'Zone 2' },
-        { value: 'Zone 3', label: 'Zone 3' },
-        { value: 'Zone 4', label: 'Zone 4' }
-      ]
-    }
-  ];
+  // Removed hardcoded filterConfigs - now loaded from backend
 
   useEffect(() => {
     loadPapers();
@@ -135,13 +118,35 @@ const PastPapers: React.FC = () => {
   const loadPapers = async (): Promise<void> => {
     setLoading(true);
     try {
-      // const data = await fetchPapers(filters);
-      // setPapers(data as Paper[]);
+      // Build filter slugs from selected filter values
+      const filterSlugs: string[] = [];
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) {
+          filterSlugs.push(value); // value is the slug
+        }
+      });
       
-      // Mock data for now
-      setPapers([]);
+      // Get URL params for category
+      const urlParams = new URLSearchParams(window.location.search);
+      const categorySlug = urlParams.get('category') || undefined;
+      
+      const response = await getAllPapers({
+        category: categorySlug,
+        filter: filterSlugs.length > 0 ? filterSlugs : undefined,
+        search: searchQuery || undefined,
+        page: 1,
+        page_size: 50,
+      });
+      
+      if (response.success) {
+        const mappedPapers = response.data.map(mapApiPaperToFrontend);
+        setPapers(mappedPapers);
+        setTotalCount(response.count);
+        setTotalPages(response.total_pages);
+      }
     } catch (error) {
       console.error('Error loading papers:', error);
+      setPapers([]);
     }
     setLoading(false);
   };
@@ -151,14 +156,11 @@ const PastPapers: React.FC = () => {
   };
 
   const clearFilters = (): void => {
-    setFilters({
-      curriculum: '',
-      subject: '',
-      paper: '',
-      year: '',
-      season: '',
-      zone: ''
+    const clearedFilters: FilterState = {};
+    filterConfigs.forEach(config => {
+      clearedFilters[config.key] = '';
     });
+    setFilters(clearedFilters);
   };
 
   const handlePaperSelect = (paper: Paper): void => {
@@ -177,9 +179,13 @@ const PastPapers: React.FC = () => {
     }
   };
 
-  const handleDownload = (paper: Paper): void => {
-    console.log('Downloading paper:', paper);
-    // Implement download logic
+  const handleDownload = async (paper: Paper): Promise<void> => {
+    try {
+      await downloadPaper(paper.id);
+      console.log('Paper download initiated:', paper.title);
+    } catch (error) {
+      console.error('Error downloading paper:', error);
+    }
   };
 
   const handlePrint = (): void => {
@@ -201,14 +207,23 @@ const PastPapers: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Filter Bar - Hidden on mobile, shown on tablet+ */}
       <div className="hidden md:block">
-        <FilterBar
-          filters={filters}
-          filterConfigs={filterConfigs}
-          onFilterChange={handleFilterChange}
-          onClearFilters={clearFilters}
-          onSearch={handleSearch}
-          searchQuery={searchQuery}
-        />
+        {loadingFilters ? (
+          <div className="bg-white border-b border-gray-200 p-4">
+            <div className="flex items-center justify-center space-x-2">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+              <span className="text-gray-600">Loading filters...</span>
+            </div>
+          </div>
+        ) : (
+          <FilterBar
+            filters={filters}
+            filterConfigs={filterConfigs}
+            onFilterChange={handleFilterChange}
+            onClearFilters={clearFilters}
+            onSearch={handleSearch}
+            searchQuery={searchQuery}
+          />
+        )}
       </div>
 
       {/* Mobile Filter Toggle */}
@@ -224,30 +239,13 @@ const PastPapers: React.FC = () => {
         </button>
         
         {/* Mobile Filter Panel */}
-        {showMobileFilters && (
+        {showMobileFilters && !loadingFilters && (
           <div className="mt-4 space-y-3">
             <div className="grid grid-cols-2 gap-2">
-              {filterConfigs.slice(0, 4).map((config) => (
+              {filterConfigs.map((config) => (
                 <select
                   key={config.key}
-                  value={filters[config.key as keyof FilterState] || ''}
-                  onChange={(e) => handleFilterChange(config.key, e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                >
-                  <option value="">{config.placeholder}</option>
-                  {config.options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              ))}
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {filterConfigs.slice(4).map((config) => (
-                <select
-                  key={config.key}
-                  value={filters[config.key as keyof FilterState] || ''}
+                  value={filters[config.key] || ''}
                   onChange={(e) => handleFilterChange(config.key, e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
@@ -275,6 +273,13 @@ const PastPapers: React.FC = () => {
                 Clear
               </button>
             </div>
+          </div>
+        )}
+        
+        {showMobileFilters && loadingFilters && (
+          <div className="mt-4 flex items-center justify-center py-4">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600">Loading filters...</span>
           </div>
         )}
       </div>
@@ -309,7 +314,7 @@ const PastPapers: React.FC = () => {
             </div>
           )}
           <PDFViewer
-            pdfUrl={selectedPaper ? `/pdfs/${selectedPaper.id}.pdf` : undefined}
+            pdfUrl={selectedPaper?.pdfUrl}
             paperTitle={selectedPaper ? `${selectedPaper.curriculum}/${selectedPaper.paperNumber}_${selectedPaper.season.replace('/', '')}_${selectedPaper.year}` : undefined}
             currentPage={currentPage}
             totalPages={selectedPaper?.totalPages || 20}

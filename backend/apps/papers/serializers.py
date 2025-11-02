@@ -3,7 +3,8 @@ Serializers for Papers and Categories
 """
 
 from rest_framework import serializers
-from .models import Category
+from .models import Category, Paper
+from apps.filters.models import FilterOption
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -141,3 +142,129 @@ class CategoryCreateUpdateSerializer(serializers.ModelSerializer):
                 current = current.parent
         
         return value
+
+
+class FilterOptionSerializer(serializers.ModelSerializer):
+    """Serializer for filter options"""
+    filter_type_name = serializers.CharField(source='filter_type.name', read_only=True)
+    filter_type_slug = serializers.CharField(source='filter_type.slug', read_only=True)
+    
+    class Meta:
+        model = FilterOption
+        fields = ['id', 'name', 'code', 'slug', 'filter_type_name', 'filter_type_slug']
+
+
+class PaperListSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for listing papers"""
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    category_slug = serializers.CharField(source='category.slug', read_only=True)
+    filters = FilterOptionSerializer(many=True, read_only=True)
+    pdf_url = serializers.SerializerMethodField()
+    thumbnail_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Paper
+        fields = [
+            'id',
+            'title',
+            'category_name',
+            'category_slug',
+            'pdf_url',
+            'thumbnail_url',
+            'file_size_mb',
+            'page_count',
+            'is_free',
+            'is_premium',
+            'is_featured',
+            'views_count',
+            'downloads_count',
+            'filters',
+            'created_at',
+        ]
+    
+    def get_pdf_url(self, obj):
+        """Get full URL for PDF file via file endpoint (X-Frame-Options exempt)"""
+        request = self.context.get('request')
+        if obj.pdf_file and request:
+            # Return the file endpoint URL instead of direct media URL
+            # This endpoint has xframe_options_exempt so it can be embedded in iframes
+            from django.urls import reverse
+            file_path = reverse('papers:paper-file', kwargs={'paper_id': obj.id})
+            return request.build_absolute_uri(file_path)
+        return None
+    
+    def get_thumbnail_url(self, obj):
+        """Get full URL for thumbnail"""
+        request = self.context.get('request')
+        if obj.thumbnail and request:
+            return request.build_absolute_uri(obj.thumbnail.url)
+        return None
+
+
+class PaperDetailSerializer(serializers.ModelSerializer):
+    """Full serializer for paper details"""
+    category = CategoryListSerializer(read_only=True)
+    filters = FilterOptionSerializer(many=True, read_only=True)
+    pdf_url = serializers.SerializerMethodField()
+    thumbnail_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Paper
+        fields = [
+            'id',
+            'title',
+            'description',
+            'category',
+            'pdf_url',
+            'thumbnail_url',
+            'file_size',
+            'file_size_mb',
+            'page_count',
+            'is_free',
+            'is_premium',
+            'is_active',
+            'is_featured',
+            'views_count',
+            'downloads_count',
+            'filters',
+            'created_at',
+            'updated_at',
+        ]
+    
+    def get_pdf_url(self, obj):
+        """Get full URL for PDF file via file endpoint (X-Frame-Options exempt)"""
+        request = self.context.get('request')
+        if obj.pdf_file and request:
+            # Return the file endpoint URL instead of direct media URL
+            # This endpoint has xframe_options_exempt so it can be embedded in iframes
+            from django.urls import reverse
+            file_path = reverse('papers:paper-file', kwargs={'paper_id': obj.id})
+            return request.build_absolute_uri(file_path)
+        return None
+    
+    def get_thumbnail_url(self, obj):
+        """Get full URL for thumbnail"""
+        request = self.context.get('request')
+        if obj.thumbnail and request:
+            return request.build_absolute_uri(obj.thumbnail.url)
+        return None
+
+
+class PaperCreateUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for creating/updating papers"""
+    
+    class Meta:
+        model = Paper
+        fields = [
+            'title',
+            'description',
+            'category',
+            'pdf_file',
+            'thumbnail',
+            'page_count',
+            'is_free',
+            'is_premium',
+            'is_active',
+            'is_featured',
+            'filters',
+        ]

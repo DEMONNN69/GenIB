@@ -203,47 +203,20 @@ const PDFViewer: React.FC<PDFViewerProps> = ({
         onTouchEnd={onTouchEnd}
       >
         {pdfUrl ? (
-          <div className="flex justify-center p-2 lg:p-4">
+          <div className="flex justify-center p-2 lg:p-4 h-full">
             <div 
-              className="bg-white shadow-2xl rounded-lg overflow-hidden w-full max-w-full lg:max-w-4xl"
+              className="bg-white shadow-2xl rounded-lg overflow-hidden w-full max-w-full lg:max-w-4xl h-full"
               style={{ 
                 width: `min(100%, ${zoom}%)`,
               }}
             >
-              {/* Mock PDF Content - Replace with actual PDF viewer */}
-              <div className="aspect-[8.5/11] bg-white p-4 lg:p-8 text-black text-xs lg:text-sm">
-                <div className="border-2 border-gray-300 p-3 lg:p-6 h-full">
-                  <div className="text-center mb-4 lg:mb-6">
-                    <div className="text-xs mb-2">Cambridge Assessment International Education</div>
-                    <h1 className="text-sm lg:text-lg font-bold mb-2">Cambridge IGCSE™ (9-1)</h1>
-                    <div className="text-xs lg:text-sm mb-4">ACCOUNTING</div>
-                    <div className="text-xs lg:text-sm mb-2">Paper 2 Structured Written Paper</div>
-                    <div className="text-xs">0985/22 May/June 2025</div>
-                    <div className="text-xs">1 hour 45 minutes</div>
-                  </div>
-                  
-                  <div className="space-y-2 lg:space-y-4 text-xs lg:text-sm">
-                    <div className="border border-black p-1 lg:p-2">
-                      <div className="flex flex-col lg:flex-row lg:justify-between space-y-2 lg:space-y-0">
-                        <div>
-                          <div>CANDIDATE NAME</div>
-                          <div className="border-b border-black h-4 lg:h-6"></div>
-                        </div>
-                        <div className="lg:text-right">
-                          <div>CANDIDATE NUMBER</div>
-                          <div className="border-b border-black h-4 lg:h-6 w-full lg:w-20"></div>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="text-xs">
-                      <p>• Answer all questions.</p>
-                      <p>• Write your answers in the spaces provided.</p>
-                      <p>• Show all working.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {/* PDF Embed */}
+              <iframe
+                src={pdfUrl}
+                className="w-full h-full"
+                title={paperTitle}
+                style={{ minHeight: '600px' }}
+              />
             </div>
           </div>
         ) : (
