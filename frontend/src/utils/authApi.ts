@@ -1,5 +1,5 @@
 // Base URL for API - exported for use in other API files
-export const BASE_URL = 'http://localhost:8000/api/v1';
+import { BASE_URL_GLOBAL as BASE_URL } from './api.ts';
 
 // Authentication API Endpoints
 const AUTH_URL = `${BASE_URL}/auth`;

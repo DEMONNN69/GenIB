@@ -1,87 +1,64 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import {
   Home2,
-  DocumentText,
-  MessageQuestion,
-  Book,
-  ClipboardText,
-  Teacher,
-  Building4,
-  Star,
-  DocumentCode2,
   Heart,
   Profile,
-  Building
+  Building, 
 } from 'iconsax-react';
+import { getAllCategories, type Category } from '../utils/categoriesApi';
+import DynamicIcon from './DynamicIcon';
 
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
 }
 
+interface SidebarCategory {
+  id: number;
+  name: string;
+  href: string;
+  iconName: string; // Changed from icon to iconName
+  description: string;
+  count: number;
+  isMain: boolean;
+}
+
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const location = useLocation();
+  const [paperCategories, setPaperCategories] = useState<SidebarCategory[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const paperCategories = [
-    { 
-      name: 'Past Year Papers', 
-      href: '/papers', 
-      icon: DocumentText,
-      description: 'Free, PDF, downloadable',
-      count: 2450,
-      isMain: true
-    },
-    { 
-      name: 'Topical Past Papers', 
-      href: '/papers', 
-      icon: Book,
-      description: 'Not free, online, not downloadable',
-      count: 1890
-    },
-    { 
-      name: 'MCQ Past Papers', 
-      href: '/papers', 
-      icon: MessageQuestion,
-      description: 'Not free, online practice',
-      count: 980
-    },
-    { 
-      name: 'Non-Topical Past Papers', 
-      href: '/papers', 
-      icon: ClipboardText,
-      description: 'Free, online, not downloadable',
-      count: 760
-    },
-    { 
-      name: 'Solved Past Papers', 
-      href: '/papers', 
-      icon: Teacher,
-      description: 'Not free, PDF, downloadable',
-      count: 340
-    },
-    { 
-      name: 'GenIB Question Bank', 
-      href: '/questions', 
-      icon: Building4,
-      description: 'Free, online, not downloadable',
-      count: 5600
-    },
-    { 
-      name: 'ACT, SAT, AP', 
-      href: '/papers', 
-      icon: Star,
-      description: 'Free, online, not downloadable',
-      count: 180
-    },
-    { 
-      name: 'Build Exam or Worksheet', 
-      href: '/exam-builder', 
-      icon: DocumentCode2,
-      description: 'Not free, convert to PDF, printable'
-    }
-  ];
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const categories = await getAllCategories();
+        
+        // Map backend data to frontend format
+        const mappedCategories: SidebarCategory[] = categories.map((cat: Category) => ({
+          id: cat.id,
+          name: cat.name,
+          href: cat.name === 'GenIB Question Bank' ? '/questions' : 
+                cat.name === 'Build Exam or Worksheet' ? '/exam-builder' : 
+                `/papers?category=${cat.slug}`,
+          iconName: cat.icon, // Store icon name from backend
+          description: cat.description,
+          count: cat.paper_count,
+          isMain: cat.is_main,
+        }));
+        
+        setPaperCategories(mappedCategories);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+        // Keep empty array on error - user will see no categories
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const otherLinks = [
     { name: 'Dashboard', href: '/', icon: Home2 },
@@ -89,7 +66,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     { name: 'Profile', href: '/profile', icon: Profile }
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isRouteActive = (path: string) => location.pathname === path;
+  
+  // Check if a category is currently selected
+  const isCategoryActive = (category: SidebarCategory) => {
+    // Check special routes first
+    if (location.pathname === '/questions' && category.name === 'GenIB Question Bank') {
+      return true;
+    }
+    if (location.pathname === '/exam-builder' && category.name === 'Build Exam or Worksheet') {
+      return true;
+    }
+    
+    // For /papers route, check the category query parameter
+    if (location.pathname === '/papers') {
+      const searchParams = new URLSearchParams(location.search);
+      const categoryParam = searchParams.get('category');
+      
+      // Extract slug from category href (e.g., /papers?category=past-year-papers)
+      const categorySlug = category.href.split('category=')[1];
+      
+      return categoryParam === categorySlug;
+    }
+    
+    return false;
+  };
 
   return (
     <>
@@ -124,6 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
             <ul className="space-y-1">
               {otherLinks.map((item) => {
                 const Icon = item.icon;
+                const isCurrentRoute = isRouteActive(item.href);
                 return (
                   <li key={item.name}>
                     <Link
@@ -131,14 +133,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                       onClick={() => window.innerWidth < 1024 && toggleSidebar()}
                       className={`
                         flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200
-                        ${isActive(item.href)
+                        ${isCurrentRoute
                           ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-700'
                           : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                         }
                       `}
                     >
                       <Icon 
-                        variant={isActive(item.href) ? "Bold" : "Outline"} 
+                        variant={isCurrentRoute ? "Bold" : "Outline"} 
                         size={20} 
                         className="mr-3" 
                       />
@@ -153,67 +155,88 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           {/* Paper Categories */}
           <div className="p-4">
             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Paper Categories</h3>
-            <ul className="space-y-1">
-              {paperCategories.map((category) => {
-                const Icon = category.icon;
-                return (
-                  <li key={category.name}>
-                    <Link
-                      to={category.href}
-                      onClick={() => window.innerWidth < 1024 && toggleSidebar()}
-                      className={`
-                        block p-3 rounded-lg transition-colors duration-200 group
-                        ${isActive(category.href)
-                          ? 'bg-blue-50 border-l-4 border-blue-600 text-blue-700'
-                          : 'hover:bg-gray-50 text-gray-700 border-l-4 border-transparent'
-                        }
-                      `}
-                    >
+            
+            {loading ? (
+              // Loading skeleton
+              <ul className="space-y-1">
+                {[...Array(8)].map((_, index) => (
+                  <li key={index} className="animate-pulse">
+                    <div className="block p-3 rounded-lg bg-gray-100">
                       <div className="flex items-start space-x-3">
-                        <div className={`p-2 rounded-lg flex-shrink-0 ${
-                          isActive(category.href) 
-                            ? 'bg-blue-100 text-blue-600' 
-                            : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
-                        }`}>
-                          <Icon 
-                            variant={isActive(category.href) ? "Bold" : "Outline"} 
-                            size={20} 
-                          />
-                        </div>
+                        <div className="w-10 h-10 bg-gray-200 rounded-lg flex-shrink-0"></div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between">
-                            <h4 className={`text-sm font-medium truncate ${
-                              isActive(category.href) ? 'text-blue-900' : 'text-gray-900'
-                            }`}>
-                              {category.name}
-                            </h4>
-                            {category.count && (
-                              <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2 ${
-                                isActive(category.href) 
-                                  ? 'bg-blue-200 text-blue-800' 
-                                  : 'bg-gray-200 text-gray-600'
-                              }`}>
-                                {category.count.toLocaleString()}
-                              </span>
-                            )}
-                          </div>
-                          <p className={`text-xs mt-1 ${
-                            isActive(category.href) ? 'text-blue-600' : 'text-gray-500'
-                          }`}>
-                            {category.description}
-                          </p>
+                          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-full"></div>
                         </div>
                       </div>
-                    </Link>
+                    </div>
                   </li>
-                );
-              })}
-            </ul>
+                ))}
+              </ul>
+            ) : (
+              <ul className="space-y-1">
+                {paperCategories.map((category) => {
+                  const isSelected = isCategoryActive(category);
+                  return (
+                    <li key={category.id}>
+                      <Link
+                        to={category.href}
+                        onClick={() => window.innerWidth < 1024 && toggleSidebar()}
+                        className={`
+                          block p-3 rounded-lg transition-colors duration-200 group
+                          ${isSelected
+                            ? 'bg-blue-50 border-l-4 border-blue-600 text-blue-700'
+                            : 'hover:bg-gray-50 text-gray-700 border-l-4 border-transparent'
+                          }
+                        `}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className={`p-2 rounded-lg flex-shrink-0 ${
+                            isSelected 
+                              ? 'bg-blue-100 text-blue-600' 
+                              : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200'
+                          }`}>
+                            <DynamicIcon 
+                              name={category.iconName}
+                              variant={isSelected ? "Bold" : "Outline"} 
+                              size={20} 
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <h4 className={`text-sm font-medium truncate ${
+                                isSelected ? 'text-blue-900' : 'text-gray-900'
+                              }`}>
+                                {category.name}
+                              </h4>
+                              {category.count > 0 && (
+                                <span className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ml-2 ${
+                                  isSelected 
+                                    ? 'bg-blue-200 text-blue-800' 
+                                    : 'bg-gray-200 text-gray-600'
+                                }`}>
+                                  {category.count.toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+                            <p className={`text-xs mt-1 ${
+                              isSelected ? 'text-blue-600' : 'text-gray-500'
+                            }`}>
+                              {category.description}
+                            </p>
+                          </div>
+                        </div>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="absolute bottom-0 w-full p-4 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-teal-50">
+        <div className=" bottom-0 w-full p-4 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-teal-50">
           <div className="text-center">
             <div className="flex items-center justify-center mb-2">
               <div className="bg-blue-600 text-white p-2 rounded-lg">

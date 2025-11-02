@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import FilterBar from '../components/FilterBar';
-import PaperCategorySidebar from '../components/PaperCategorySidebar';
 import PaperList from '../components/PaperList';
 import PDFViewer from '../components/PDFViewer';
 // import { fetchPapers, toggleFavorite } from '../utils/api';
@@ -46,7 +45,6 @@ const PastPapers: React.FC = () => {
   const [papers, setPapers] = useState<Paper[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [selectedPaper, setSelectedPaper] = useState<Paper | null>(null);
-  const [activeCategory, setActiveCategory] = useState<string>('past-year-papers');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
@@ -132,13 +130,16 @@ const PastPapers: React.FC = () => {
 
   useEffect(() => {
     loadPapers();
-  }, [filters, activeCategory]);
+  }, [filters]);
 
   const loadPapers = async (): Promise<void> => {
     setLoading(true);
     try {
-      const data = await fetchPapers({ ...filters, category: activeCategory });
-      setPapers(data as Paper[]);
+      // const data = await fetchPapers(filters);
+      // setPapers(data as Paper[]);
+      
+      // Mock data for now
+      setPapers([]);
     } catch (error) {
       console.error('Error loading papers:', error);
     }
@@ -160,11 +161,6 @@ const PastPapers: React.FC = () => {
     });
   };
 
-  const handleCategoryChange = (categoryId: string): void => {
-    setActiveCategory(categoryId);
-    setSelectedPaper(null);
-  };
-
   const handlePaperSelect = (paper: Paper): void => {
     setSelectedPaper(paper);
     setCurrentPage(1);
@@ -172,7 +168,7 @@ const PastPapers: React.FC = () => {
 
   const handleToggleFavorite = async (paperId: number): Promise<void> => {
     try {
-      await toggleFavorite('paper', paperId);
+      // await toggleFavorite('paper', paperId);
       setPapers(prev => prev.map(p => 
         p.id === paperId ? { ...p, isFavorite: !p.isFavorite } : p
       ));
@@ -283,81 +279,45 @@ const PastPapers: React.FC = () => {
         )}
       </div>
 
-      {/* Main Content - Responsive Layout */}
+      {/* Main Content - Papers and PDF Viewer */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-        {/* Categories - Mobile: Horizontal scroll, Desktop: Sidebar */}
-        <div className="lg:w-64 flex-shrink-0">
-          <div className="lg:hidden bg-white border-b border-gray-200 p-4">
-            <div className="flex space-x-2 overflow-x-auto pb-2">
-              {[
-                { id: 'past-year-papers', name: 'Past Papers', count: 2450 },
-                { id: 'topical-papers', name: 'Topical', count: 1890 },
-                { id: 'mock-papers', name: 'Mock', count: 760 },
-                { id: 'specimen-papers', name: 'Specimen', count: 340 }
-              ].map((category) => (
-                <button
-                  key={category.id}
-                  onClick={() => handleCategoryChange(category.id)}
-                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    activeCategory === category.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {category.name} ({category.count})
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          <div className="hidden lg:block">
-            <PaperCategorySidebar
-              activeCategory={activeCategory}
-              onCategoryChange={handleCategoryChange}
-            />
-          </div>
+        {/* Paper List */}
+        <div className="flex-1 lg:max-w-md">
+          <PaperList
+            papers={papers}
+            loading={loading}
+            selectedPaper={selectedPaper}
+            onPaperSelect={handlePaperSelect}
+            onToggleFavorite={handleToggleFavorite}
+            onDownload={handleDownload}
+          />
         </div>
 
-        {/* Papers and PDF - Mobile: Stack, Desktop: Side by side */}
-        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
-          {/* Paper List */}
-          <div className="flex-1 lg:max-w-md">
-            <PaperList
-              papers={papers}
-              loading={loading}
-              selectedPaper={selectedPaper}
-              onPaperSelect={handlePaperSelect}
-              onToggleFavorite={handleToggleFavorite}
-              onDownload={handleDownload}
-            />
-          </div>
-
-          {/* PDF Viewer - Hidden on mobile unless paper selected */}
-          <div className={`lg:flex-1 lg:min-w-[400px] ${selectedPaper ? 'block' : 'hidden lg:block'}`}>
-            {selectedPaper && (
-              <div className="lg:hidden bg-white border-b border-gray-200 p-4">
-                <button
-                  onClick={() => setSelectedPaper(null)}
-                  className="flex items-center text-blue-600 font-medium"
-                >
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                  Back to Papers
-                </button>
-              </div>
-            )}
-            <PDFViewer
-              pdfUrl={selectedPaper ? `/pdfs/${selectedPaper.id}.pdf` : undefined}
-              paperTitle={selectedPaper ? `${selectedPaper.curriculum}/${selectedPaper.paperNumber}_${selectedPaper.season.replace('/', '')}_${selectedPaper.year}` : undefined}
-              currentPage={currentPage}
-              totalPages={selectedPaper?.totalPages || 20}
-              onPageChange={setCurrentPage}
-              onDownload={() => selectedPaper && handleDownload(selectedPaper)}
-              onPrint={handlePrint}
-              onShare={handleShare}
-            />
-          </div>
+        {/* PDF Viewer - Hidden on mobile unless paper selected */}
+        <div className={`lg:flex-1 lg:min-w-[400px] ${selectedPaper ? 'block' : 'hidden lg:block'}`}>
+          {selectedPaper && (
+            <div className="lg:hidden bg-white border-b border-gray-200 p-4">
+              <button
+                onClick={() => setSelectedPaper(null)}
+                className="flex items-center text-blue-600 font-medium"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Papers
+              </button>
+            </div>
+          )}
+          <PDFViewer
+            pdfUrl={selectedPaper ? `/pdfs/${selectedPaper.id}.pdf` : undefined}
+            paperTitle={selectedPaper ? `${selectedPaper.curriculum}/${selectedPaper.paperNumber}_${selectedPaper.season.replace('/', '')}_${selectedPaper.year}` : undefined}
+            currentPage={currentPage}
+            totalPages={selectedPaper?.totalPages || 20}
+            onPageChange={setCurrentPage}
+            onDownload={() => selectedPaper && handleDownload(selectedPaper)}
+            onPrint={handlePrint}
+            onShare={handleShare}
+          />
         </div>
       </div>
     </div>
