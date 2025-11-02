@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import {
-  Home2,
-  Heart,
-  Profile,
-  Building, 
-} from 'iconsax-react';
 import { getAllCategories, type Category } from '../utils/categoriesApi';
 import DynamicIcon from './DynamicIcon';
 
@@ -61,9 +55,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   }, []);
 
   const otherLinks = [
-    { name: 'Dashboard', href: '/', icon: Home2 },
-    { name: 'Favorites', href: '/favorites', icon: Heart },
-    { name: 'Profile', href: '/profile', icon: Profile }
+    { name: 'Dashboard', href: '/', icon: <DynamicIcon name="Home2" /> },
+    { name: 'Favorites', href: '/favorites', icon: <DynamicIcon name="Heart" /> },
+    { name: 'Profile', href: '/profile', icon: <DynamicIcon name="Profile" /> }
   ];
 
   const isRouteActive = (path: string) => location.pathname === path;
@@ -139,7 +133,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                         }
                       `}
                     >
-                      <Icon 
+                      <DynamicIcon 
+                        name={item.icon.props.name}
                         variant={isCurrentRoute ? "Bold" : "Outline"} 
                         size={20} 
                         className="mr-3" 
@@ -236,11 +231,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
         </div>
 
         {/* Footer */}
-        <div className=" bottom-0 w-full p-4 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-teal-50">
+        <div className="absolute bottom-0 w-full p-4 border-t border-gray-200 bg-gradient-to-r from-blue-50 to-teal-50">
           <div className="text-center">
             <div className="flex items-center justify-center mb-2">
               <div className="bg-blue-600 text-white p-2 rounded-lg">
-                <Building variant="Bold" size={24} />
+                <DynamicIcon name="Building" variant="Bold" size={24} />
               </div>
             </div>
             <h3 className="text-sm font-medium text-gray-900 mb-1">For Schools</h3>
