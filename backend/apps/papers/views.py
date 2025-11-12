@@ -504,8 +504,7 @@ class BundleFileView(APIView):
     
     def get(self, request, bundle_id):
         """
-        Download bundle PDF file
-        TODO: Add payment verification for paid bundles
+        Download bundle PDF file with payment verification
         """
         try:
             bundle = Bundle.objects.get(id=bundle_id, is_active=True)
@@ -517,21 +516,24 @@ class BundleFileView(APIView):
                     'message': 'This bundle does not have a combined PDF file'
                 }, status=status.HTTP_404_NOT_FOUND)
             
-            # TODO: Payment verification for paid bundles
-            # For now, we'll allow all authenticated users to access
-            # In future, check if user has purchased the bundle:
-            # if bundle.is_paid:
-            #     has_purchased = BundlePurchase.objects.filter(
-            #         user=request.user,
-            #         bundle=bundle,
-            #         is_paid=True
-            #     ).exists()
-            #     if not has_purchased:
-            #         return Response({
-            #             'success': False,
-            #             'message': 'Purchase required to access this bundle',
-            #             'price': str(bundle.price)
-            #         }, status=status.HTTP_402_PAYMENT_REQUIRED)
+            # ✅ Payment verification for paid bundles
+            if bundle.is_paid:
+                from apps.payments.models import UserPurchase
+                
+                has_purchased = UserPurchase.objects.filter(
+                    user=request.user,
+                    bundle=bundle,
+                    is_active=True
+                ).exists()
+                
+                if not has_purchased:
+                    return Response({
+                        'success': False,
+                        'message': 'Purchase required to access this bundle',
+                        'price': str(bundle.price),
+                        'bundle_id': bundle.id,
+                        'bundle_name': bundle.name
+                    }, status=status.HTTP_402_PAYMENT_REQUIRED)
             
             # Increment downloads count
             bundle.downloads_count += 1
