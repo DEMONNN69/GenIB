@@ -3,7 +3,8 @@ Django admin configuration for Papers and Categories
 """
 
 from django.contrib import admin
-from .models import Category, Paper
+from django.utils.html import format_html
+from .models import Category, Paper, Bundle
 
 
 @admin.register(Category)
@@ -107,4 +108,104 @@ class PaperAdmin(admin.ModelAdmin):
     def file_size_mb(self, obj):
         return f"{obj.file_size_mb} MB" if obj.file_size else "—"
     file_size_mb.short_description = 'File Size'
+
+
+@admin.register(Bundle)
+class BundleAdmin(admin.ModelAdmin):
+    list_display = [
+        'name',
+        'category',
+        'paper_count_display',
+        'pricing_display',
+        'file_size_mb',
+        'is_featured',
+        'is_active',
+        'purchase_count',
+        'created_at'
+    ]
+    list_filter = [
+        'category',
+        'is_paid',
+        'is_featured',
+        'is_active',
+        'created_at'
+    ]
+    search_fields = ['name', 'description', 'slug']
+    list_editable = ['is_active', 'is_featured']
+    filter_horizontal = ['papers', 'filters']  # Nice UI for ManyToMany
+    date_hierarchy = 'created_at'
+    ordering = ['display_order', '-created_at']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'slug', 'category', 'description')
+        }),
+        ('Papers in Bundle', {
+            'fields': ('papers',),
+            'description': 'Select papers to include in this bundle'
+        }),
+        ('Bundle File', {
+            'fields': ('bundle_pdf', 'cover_image'),
+            'description': 'Optional: Upload a combined PDF file for the entire bundle'
+        }),
+        ('Dynamic Filters', {
+            'fields': ('filters',),
+            'description': 'Select applicable filters (curriculum, subject, etc.)',
+            'classes': ('collapse',)
+        }),
+        ('Pricing', {
+            'fields': ('is_paid', 'price'),
+            'description': 'Set pricing for this bundle. Price is required if "Is paid" is checked.'
+        }),
+        ('Display & Status', {
+            'fields': ('is_active', 'is_featured', 'display_order')
+        }),
+        ('Statistics', {
+            'fields': ('views_count', 'downloads_count', 'purchase_count', 'file_size'),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ['file_size', 'views_count', 'downloads_count', 'purchase_count', 'created_at', 'updated_at']
+    
+    def get_prepopulated_fields(self, request, obj=None):
+        """Only prepopulate slug when creating new bundle"""
+        if obj is None:
+            return {'slug': ('name',)}
+        return {}
+    
+    def paper_count_display(self, obj):
+        """Display number of papers in bundle"""
+        count = obj.paper_count
+        if count == 0:
+            return format_html('<span style="color: red;">0 papers</span>')
+        return format_html('<span style="color: green;">{} paper{}</span>', count, 's' if count > 1 else '')
+    paper_count_display.short_description = 'Papers'
+    
+    def pricing_display(self, obj):
+        """Display pricing information"""
+        if obj.is_paid:
+            if obj.price:
+                return format_html('<span style="color: #0066cc; font-weight: bold;">${}</span>', obj.price)
+            return format_html('<span style="color: red;">PAID - No Price Set!</span>')
+        return format_html('<span style="color: green;">FREE</span>')
+    pricing_display.short_description = 'Pricing'
+    
+    def file_size_mb(self, obj):
+        """Display file size"""
+        return f"{obj.file_size_mb} MB" if obj.file_size else "—"
+    file_size_mb.short_description = 'File Size'
+    
+    def save_model(self, request, obj, form, change):
+        """Custom save with validation"""
+        try:
+            super().save_model(request, obj, form, change)
+        except ValueError as e:
+            from django.contrib import messages
+            messages.error(request, str(e))
+
 

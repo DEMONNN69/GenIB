@@ -203,3 +203,150 @@ class Paper(models.Model):
             is_active=True
         )
 
+
+class Bundle(models.Model):
+    """
+    Bundle model for grouping multiple papers together
+    Can be free or paid
+    """
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=280, unique=True, blank=True)
+    description = models.TextField(blank=True)
+    
+    # Category relationship
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name='bundles',
+        help_text="Category this bundle belongs to"
+    )
+    
+    # Papers included in this bundle
+    papers = models.ManyToManyField(
+        Paper,
+        related_name='bundles',
+        blank=True,
+        help_text="Papers included in this bundle"
+    )
+    
+    # Optional combined PDF file
+    bundle_pdf = models.FileField(
+        upload_to='bundles/%Y/%m/',
+        null=True,
+        blank=True,
+        help_text="Optional combined PDF file for the entire bundle"
+    )
+    
+    # Cover/Thumbnail
+    cover_image = models.ImageField(
+        upload_to='bundle_covers/',
+        null=True,
+        blank=True,
+        help_text="Cover image for the bundle"
+    )
+    
+    # Pricing
+    is_paid = models.BooleanField(
+        default=False,
+        help_text="Is this a paid bundle?"
+    )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)],
+        help_text="Price in USD (required if is_paid is True)"
+    )
+    
+    # Filters (same as Paper for consistency)
+    filters = models.ManyToManyField(
+        'filters.FilterOption',
+        related_name='bundles',
+        blank=True,
+        help_text="Dynamic filters applied to this bundle"
+    )
+    
+    # File metadata
+    file_size = models.BigIntegerField(
+        null=True,
+        blank=True,
+        help_text="Bundle PDF file size in bytes"
+    )
+    
+    # Status
+    is_active = models.BooleanField(default=True)
+    is_featured = models.BooleanField(
+        default=False,
+        help_text="Show in featured section?"
+    )
+    
+    # Display
+    display_order = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text="Order in which bundles are displayed"
+    )
+    
+    # Statistics
+    views_count = models.IntegerField(default=0)
+    downloads_count = models.IntegerField(default=0)
+    purchase_count = models.IntegerField(
+        default=0,
+        help_text="Number of purchases (for paid bundles)"
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = 'Bundle'
+        verbose_name_plural = 'Bundles'
+        ordering = ['display_order', '-created_at']
+        indexes = [
+            models.Index(fields=['category', 'is_active']),
+            models.Index(fields=['is_paid', 'is_active']),
+            models.Index(fields=['is_featured', 'is_active']),
+            models.Index(fields=['display_order', '-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.name} ({self.category.name})"
+    
+    def save(self, *args, **kwargs):
+        """Auto-generate slug and calculate file size"""
+        if not self.slug:
+            self.slug = slugify(self.name)
+        
+        if self.bundle_pdf and not self.file_size:
+            self.file_size = self.bundle_pdf.size
+        
+        # Ensure price is set if is_paid is True
+        if self.is_paid and self.price is None:
+            raise ValueError("Price must be set for paid bundles")
+        
+        # Clear price if not paid
+        if not self.is_paid:
+            self.price = None
+        
+        super().save(*args, **kwargs)
+    
+    @property
+    def file_size_mb(self):
+        """Return file size in MB"""
+        if self.file_size:
+            return round(self.file_size / (1024 * 1024), 2)
+        return 0
+    
+    @property
+    def paper_count(self):
+        """Return number of papers in bundle"""
+        return self.papers.count()
+    
+    @property
+    def is_free(self):
+        """Return True if bundle is free"""
+        return not self.is_paid
+
+

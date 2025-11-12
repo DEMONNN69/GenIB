@@ -11,6 +11,8 @@ import PastPapers from './pages/PastPapers.tsx';
 import ExamBuilder from './pages/ExamBuilder.tsx';
 import Favorites from './pages/Favorites.tsx';
 import Profile from './pages/Profile.tsx';
+import Bundles from './pages/Bundles.tsx';
+import BundleDetail from './pages/BundleDetail.tsx';
 import QuestionDetail from './components/QuestionDetail.tsx';
 import PaperDetail from './components/PaperDetail.tsx';
 import { AuthProvider } from './contexts/AuthContext';
@@ -95,6 +97,22 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <PaperDetail />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/bundles" 
+              element={
+                <ProtectedRoute>
+                  <Bundles />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/bundles/:id" 
+              element={
+                <ProtectedRoute>
+                  <BundleDetail />
                 </ProtectedRoute>
               } 
             />

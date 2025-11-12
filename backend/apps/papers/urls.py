@@ -14,6 +14,10 @@ from .views import (
     PaperDownloadView,
     PaperSearchView,
     PaperFileView,
+    BundleListView,
+    BundleDetailView,
+    BundlePapersView,
+    BundleFileView,
 )
 
 app_name = 'papers'
@@ -32,4 +36,11 @@ urlpatterns = [
     path('papers/<int:paper_id>/', PaperDetailView.as_view(), name='paper-detail'),
     path('papers/<int:paper_id>/download/', PaperDownloadView.as_view(), name='paper-download'),
     path('papers/<int:paper_id>/file/', PaperFileView.as_view(), name='paper-file'),
+    
+    # Bundle endpoints
+    path('bundles/', BundleListView.as_view(), name='bundle-list'),
+    path('bundles/<int:bundle_id>/', BundleDetailView.as_view(), name='bundle-detail'),
+    path('bundles/<int:bundle_id>/papers/', BundlePapersView.as_view(), name='bundle-papers'),
+    path('bundles/<int:bundle_id>/file/', BundleFileView.as_view(), name='bundle-file'),
 ]
+

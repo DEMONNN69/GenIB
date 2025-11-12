@@ -3,7 +3,7 @@ Serializers for Papers and Categories
 """
 
 from rest_framework import serializers
-from .models import Category, Paper
+from .models import Category, Paper, Bundle
 from apps.filters.models import FilterOption
 
 
@@ -268,3 +268,97 @@ class PaperCreateUpdateSerializer(serializers.ModelSerializer):
             'is_featured',
             'filters',
         ]
+
+
+class BundleListSerializer(serializers.ModelSerializer):
+    """
+    Serializer for listing bundles (minimal fields)
+    """
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    category_slug = serializers.CharField(source='category.slug', read_only=True)
+    paper_count = serializers.IntegerField(read_only=True)
+    filters = FilterOptionSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Bundle
+        fields = [
+            'id',
+            'name',
+            'slug',
+            'description',
+            'category',
+            'category_name',
+            'category_slug',
+            'cover_image',
+            'is_paid',
+            'price',
+            'paper_count',
+            'file_size',
+            'is_active',
+            'is_featured',
+            'display_order',
+            'views_count',
+            'downloads_count',
+            'purchase_count',
+            'filters',
+            'created_at',
+        ]
+        read_only_fields = ['id', 'slug', 'views_count', 'downloads_count', 'purchase_count', 'created_at']
+
+
+class BundleDetailSerializer(serializers.ModelSerializer):
+    """
+    Detailed serializer for Bundle with all information
+    """
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    category_slug = serializers.CharField(source='category.slug', read_only=True)
+    paper_count = serializers.IntegerField(read_only=True)
+    papers = PaperListSerializer(many=True, read_only=True)
+    filters = FilterOptionSerializer(many=True, read_only=True)
+    bundle_pdf_url = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Bundle
+        fields = [
+            'id',
+            'name',
+            'slug',
+            'description',
+            'category',
+            'category_name',
+            'category_slug',
+            'papers',
+            'paper_count',
+            'bundle_pdf',
+            'bundle_pdf_url',
+            'cover_image',
+            'is_paid',
+            'price',
+            'file_size',
+            'is_active',
+            'is_featured',
+            'display_order',
+            'views_count',
+            'downloads_count',
+            'purchase_count',
+            'filters',
+            'created_at',
+            'updated_at',
+        ]
+        read_only_fields = [
+            'id',
+            'slug',
+            'views_count',
+            'downloads_count',
+            'purchase_count',
+            'created_at',
+            'updated_at'
+        ]
+    
+    def get_bundle_pdf_url(self, obj):
+        """Get the URL for the bundle PDF file endpoint"""
+        if obj.bundle_pdf:
+            from django.urls import reverse
+            return reverse('papers:bundle-file', kwargs={'bundle_id': obj.id})
+        return None
+

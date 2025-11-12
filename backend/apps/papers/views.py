@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db.models import Q
 
-from .models import Category, Paper
+from .models import Category, Paper, Bundle
 from .serializers import (
     CategorySerializer,
     CategoryListSerializer,
@@ -16,6 +16,8 @@ from .serializers import (
     CategoryCreateUpdateSerializer,
     PaperListSerializer,
     PaperDetailSerializer,
+    BundleListSerializer,
+    BundleDetailSerializer,
 )
 from .services import CategoryService
 from django.http import FileResponse, Http404
@@ -395,3 +397,158 @@ class PaperFileView(APIView):
         except Exception as exc:
             # Could not open file
             raise Http404('File not found')
+
+
+class BundleListView(APIView):
+    """
+    GET: List all active bundles
+    """
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        """Get all active bundles with optional filtering"""
+        bundles = Bundle.objects.filter(is_active=True).select_related('category').prefetch_related('filters', 'papers')
+        
+        # Filter by category
+        category_id = request.query_params.get('category')
+        if category_id:
+            bundles = bundles.filter(category_id=category_id)
+        
+        # Filter by pricing
+        is_paid = request.query_params.get('is_paid')
+        if is_paid is not None:
+            bundles = bundles.filter(is_paid=is_paid.lower() == 'true')
+        
+        # Filter by featured
+        is_featured = request.query_params.get('is_featured')
+        if is_featured is not None:
+            bundles = bundles.filter(is_featured=is_featured.lower() == 'true')
+        
+        serializer = BundleListSerializer(bundles, many=True)
+        
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'count': bundles.count()
+        }, status=status.HTTP_200_OK)
+
+
+class BundleDetailView(APIView):
+    """
+    GET: Get bundle details by ID
+    """
+    permission_classes = [AllowAny]
+    
+    def get(self, request, bundle_id):
+        """Get bundle details"""
+        try:
+            bundle = Bundle.objects.select_related('category').prefetch_related(
+                'papers',
+                'papers__category',
+                'papers__filters',
+                'filters'
+            ).get(id=bundle_id, is_active=True)
+            
+            # Increment views count
+            bundle.views_count += 1
+            bundle.save(update_fields=['views_count'])
+            
+            serializer = BundleDetailSerializer(bundle)
+            
+            return Response({
+                'success': True,
+                'data': serializer.data
+            }, status=status.HTTP_200_OK)
+            
+        except Bundle.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Bundle not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+
+class BundlePapersView(APIView):
+    """
+    GET: Get all papers in a bundle
+    """
+    permission_classes = [AllowAny]
+    
+    def get(self, request, bundle_id):
+        """Get papers in bundle"""
+        try:
+            bundle = Bundle.objects.get(id=bundle_id, is_active=True)
+            papers = bundle.papers.filter(is_active=True).select_related('category').prefetch_related('filters')
+            
+            serializer = PaperListSerializer(papers, many=True)
+            
+            return Response({
+                'success': True,
+                'data': serializer.data,
+                'count': papers.count(),
+                'bundle_name': bundle.name
+            }, status=status.HTTP_200_OK)
+            
+        except Bundle.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Bundle not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+
+@method_decorator(xframe_options_exempt, name='dispatch')
+class BundleFileView(APIView):
+    """
+    GET: Download/view bundle PDF file
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, bundle_id):
+        """
+        Download bundle PDF file
+        TODO: Add payment verification for paid bundles
+        """
+        try:
+            bundle = Bundle.objects.get(id=bundle_id, is_active=True)
+            
+            # Check if bundle has a PDF file
+            if not bundle.bundle_pdf:
+                return Response({
+                    'success': False,
+                    'message': 'This bundle does not have a combined PDF file'
+                }, status=status.HTTP_404_NOT_FOUND)
+            
+            # TODO: Payment verification for paid bundles
+            # For now, we'll allow all authenticated users to access
+            # In future, check if user has purchased the bundle:
+            # if bundle.is_paid:
+            #     has_purchased = BundlePurchase.objects.filter(
+            #         user=request.user,
+            #         bundle=bundle,
+            #         is_paid=True
+            #     ).exists()
+            #     if not has_purchased:
+            #         return Response({
+            #             'success': False,
+            #             'message': 'Purchase required to access this bundle',
+            #             'price': str(bundle.price)
+            #         }, status=status.HTTP_402_PAYMENT_REQUIRED)
+            
+            # Increment downloads count
+            bundle.downloads_count += 1
+            bundle.save(update_fields=['downloads_count'])
+            
+            # Serve file
+            file_path = bundle.bundle_pdf.path
+            response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+            filename = getattr(bundle.bundle_pdf, 'name', 'bundle.pdf').split('/')[-1]
+            response['Content-Disposition'] = f'inline; filename="{filename}"'
+            return response
+            
+        except Bundle.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Bundle not found'
+            }, status=status.HTTP_404_NOT_FOUND)
+        except Exception as exc:
+            raise Http404('File not found')
+

@@ -56,6 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
   const otherLinks = [
     { name: 'Dashboard', href: '/', icon: <DynamicIcon name="Home2" /> },
+    { name: 'Bundles', href: '/bundles', icon: <DynamicIcon name="Package" /> },
     { name: 'Favorites', href: '/favorites', icon: <DynamicIcon name="Heart" /> },
     { name: 'Profile', href: '/profile', icon: <DynamicIcon name="Profile" /> }
   ];
