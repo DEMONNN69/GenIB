@@ -272,9 +272,13 @@ class OrderListView(APIView):
                     payment.save()
                     
                     response_data = {
+                        'id': order.id,
                         'order_id': order.id,
                         'order_number': order.order_number,
-                        'payment': payment_data
+                        'total_amount': str(total),
+                        'currency': order.currency,
+                        'stripe_client_secret': payment_data['client_secret'],
+                        'stripe_payment_intent_id': payment_data['payment_intent_id']
                     }
                 
                 elif payment_method == 'razorpay':
@@ -283,15 +287,22 @@ class OrderListView(APIView):
                     payment.save()
                     
                     response_data = {
+                        'id': order.id,
                         'order_id': order.id,
                         'order_number': order.order_number,
-                        'payment': payment_data
+                        'total_amount': str(total),
+                        'currency': order.currency,
+                        'razorpay_order_id': payment_data['order_id'],
+                        'razorpay_key_id': payment_data['key_id']
                     }
                 
                 else:
                     response_data = {
+                        'id': order.id,
                         'order_id': order.id,
                         'order_number': order.order_number,
+                        'total_amount': str(total),
+                        'currency': order.currency
                     }
 
                 return Response({
@@ -364,26 +375,32 @@ class ConfirmPaymentView(APIView):
 
     def post(self, request):
         """Confirm payment after gateway confirmation"""
-        payment_intent_id = request.data.get('payment_intent_id')
+        order_id = request.data.get('order_id')
         payment_method = request.data.get('payment_method')
 
         try:
-            payment = get_object_or_404(
-                Payment,
-                payment_intent_id=payment_intent_id,
-                order__user=request.user
+            order = get_object_or_404(
+                Order,
+                id=order_id,
+                user=request.user
             )
+            
+            payment = get_object_or_404(Payment, order=order)
 
             # Verify with payment gateway
             if payment_method == 'stripe':
-                verification = PaymentService.verify_stripe_payment(payment_intent_id)
+                stripe_payment_intent_id = request.data.get('stripe_payment_intent_id')
+                verification = PaymentService.verify_stripe_payment(stripe_payment_intent_id)
+                
             elif payment_method == 'razorpay':
-                payment_id = request.data.get('payment_id')
-                signature = request.data.get('signature')
+                razorpay_payment_id = request.data.get('razorpay_payment_id')
+                razorpay_order_id = request.data.get('razorpay_order_id')
+                razorpay_signature = request.data.get('razorpay_signature')
+                
                 verification = PaymentService.verify_razorpay_payment(
-                    payment_id,
-                    payment_intent_id,
-                    signature
+                    razorpay_payment_id,
+                    razorpay_order_id,
+                    razorpay_signature
                 )
             else:
                 return Response({
@@ -397,11 +414,16 @@ class ConfirmPaymentView(APIView):
                 payment.gateway_response = verification
                 payment.save()
 
+                # Update order status
+                order.status = 'completed'
+                order.save()
+
                 return Response({
                     'success': True,
                     'message': 'Payment confirmed successfully',
                     'data': {
-                        'order_number': payment.order.order_number,
+                        'order_id': order.id,
+                        'order_number': order.order_number,
                         'amount': float(payment.amount),
                         'status': payment.status
                     }

@@ -13,9 +13,14 @@ import Favorites from './pages/Favorites.tsx';
 import Profile from './pages/Profile.tsx';
 import Bundles from './pages/Bundles.tsx';
 import BundleDetail from './pages/BundleDetail.tsx';
+import Cart from './pages/Cart.tsx';
+import MyPurchases from './pages/MyPurchases.tsx';
+import Checkout from './pages/Checkout.tsx';
+import OrderConfirmation from './pages/OrderConfirmation.tsx';
 import QuestionDetail from './components/QuestionDetail.tsx';
 import PaperDetail from './components/PaperDetail.tsx';
 import { AuthProvider } from './contexts/AuthContext';
+import { CartProvider } from './contexts/CartContext';
 import { ProtectedRoute, PublicOnlyRoute } from './guards/RouteGuards';
 
 function AppContent() {
@@ -117,6 +122,38 @@ function AppContent() {
               } 
             />
             <Route 
+              path="/cart" 
+              element={
+                <ProtectedRoute>
+                  <Cart />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/checkout" 
+              element={
+                <ProtectedRoute>
+                  <Checkout />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/orders/:id" 
+              element={
+                <ProtectedRoute>
+                  <OrderConfirmation />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/purchases" 
+              element={
+                <ProtectedRoute>
+                  <MyPurchases />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/exam-builder" 
               element={
                 <ProtectedRoute>
@@ -150,9 +187,11 @@ function AppContent() {
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <CartProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </CartProvider>
     </AuthProvider>
   );
 }

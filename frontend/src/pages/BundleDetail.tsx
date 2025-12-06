@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getBundleById, downloadBundleFile, BundleDetail } from '../utils/bundlesApi';
+import { checkPurchase } from '../utils/paymentsApi';
 import DynamicIcon from '../components/DynamicIcon';
 import PDFViewer from '../components/PDFViewer';
+import AddToCartButton from '../components/AddToCartButton';
 
 const BundleDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +17,7 @@ const BundleDetailPage = () => {
   const [showPDF, setShowPDF] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'papers'>('overview');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [hasPurchased, setHasPurchased] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -29,6 +32,12 @@ const BundleDetailPage = () => {
     try {
       const data = await getBundleById(Number(id));
       setBundle(data);
+      
+      // Check if user has purchased this bundle
+      if (data.is_paid) {
+        const purchased = await checkPurchase(data.id);
+        setHasPurchased(purchased);
+      }
     } catch (err) {
       setError('Failed to load bundle details. Please try again.');
       console.error('Error fetching bundle:', err);
@@ -40,8 +49,8 @@ const BundleDetailPage = () => {
   const handleDownload = async () => {
     if (!bundle) return;
 
-    // Check if bundle is paid and show payment modal (placeholder)
-    if (bundle.is_paid) {
+    // Check if bundle is paid and user hasn't purchased
+    if (bundle.is_paid && !hasPurchased) {
       setShowPaymentModal(true);
       return;
     }
@@ -61,7 +70,9 @@ const BundleDetailPage = () => {
   };
 
   const handleViewPDF = () => {
-    if (bundle?.is_paid) {
+    if (!bundle) return;
+    
+    if (bundle.is_paid && !hasPurchased) {
       setShowPaymentModal(true);
       return;
     }
@@ -251,7 +262,18 @@ const BundleDetailPage = () => {
 
               {/* Action Buttons */}
               <div className="space-y-3 mb-6">
-                {bundle.bundle_pdf && (
+                {/* Add to Cart / Purchase Button */}
+                {bundle.is_paid && !hasPurchased && (
+                  <AddToCartButton
+                    bundleId={bundle.id}
+                    isPaid={bundle.is_paid}
+                    price={bundle.price || '0'}
+                    className="w-full"
+                  />
+                )}
+                
+                {/* View/Download buttons - only show for free bundles or purchased bundles */}
+                {bundle.bundle_pdf && (!bundle.is_paid || hasPurchased) && (
                   <>
                     <button
                       onClick={handleViewPDF}
@@ -269,6 +291,15 @@ const BundleDetailPage = () => {
                       {downloading ? 'Downloading...' : 'Download PDF'}
                     </button>
                   </>
+                )}
+                
+                {/* Message for paid bundles without purchase */}
+                {bundle.is_paid && !hasPurchased && !bundle.bundle_pdf && (
+                  <div className="text-center py-4 bg-blue-50 rounded-md">
+                    <p className="text-sm text-blue-700">
+                      Purchase this bundle to access all papers
+                    </p>
+                  </div>
                 )}
               </div>
 

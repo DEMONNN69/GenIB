@@ -5,9 +5,11 @@ import {
   Bars3Icon,
   BellIcon,
   QuestionMarkCircleIcon,
-  Cog6ToothIcon
+  Cog6ToothIcon,
+  ShoppingCartIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../contexts/AuthContext';
+import { useCart } from '../contexts/CartContext';
 
 interface NavbarProps {
   toggleSidebar: () => void;
@@ -16,6 +18,7 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const { user, isLoggedIn, logout } = useAuth();
+  const { cartCount } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -161,6 +164,19 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                   <Cog6ToothIcon className="h-5 w-5" />
                 </button>
 
+                {/* Shopping Cart */}
+                <Link
+                  to="/cart"
+                  className="p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors relative"
+                >
+                  <ShoppingCartIcon className="h-5 w-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-blue-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center font-medium">
+                      {cartCount}
+                    </span>
+                  )}
+                </Link>
+
                 {/* Notifications */}
                 <div className="relative">
                   <button
@@ -230,6 +246,13 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
                           onClick={() => setIsProfileDropdownOpen(false)}
                         >
                           Profile Settings
+                        </Link>
+                        <Link
+                          to="/purchases"
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                          onClick={() => setIsProfileDropdownOpen(false)}
+                        >
+                          My Purchases
                         </Link>
                         <Link
                           to="/favorites"
