@@ -97,10 +97,12 @@ const Checkout = () => {
       });
 
       // Initialize Razorpay payment
+      const totalAmountInr = parseFloat(orderData.total_amount_inr);
+      
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: Math.round(orderData.total_amount * 100), // Convert to paise
-        currency: orderData.currency,
+        amount: Math.round(totalAmountInr * 100), // Convert INR to paise
+        currency: 'INR', // Always INR for Razorpay to enable UPI/Wallets
         name: 'GenIB',
         description: `Order #${orderData.order_number}`,
         order_id: orderData.razorpay_order_id,
@@ -348,9 +350,14 @@ const Checkout = () => {
                   <span className="font-medium text-gray-900">${tax.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-200">
-                  <span>Total</span>
+                  <span>Total (USD)</span>
                   <span className="text-blue-600">${total.toFixed(2)}</span>
                 </div>
+                <div className="flex justify-between text-sm text-gray-500 pb-2 border-b border-gray-100">
+                  <span>Payment Amount (INR)</span>
+                  <span className="font-medium">₹{(total * 83).toFixed(2)}</span>
+                </div>
+                <p className="text-xs text-gray-400 text-center">1 USD = 83 INR (approx.)</p>
               </div>
 
               {/* Error Message */}
@@ -374,7 +381,7 @@ const Checkout = () => {
                 ) : (
                   <>
                     <DynamicIcon name="Lock" className="h-5 w-5" />
-                    Pay ${total.toFixed(2)}
+                    Pay ₹{(total * 83).toFixed(2)}
                   </>
                 )}
               </button>

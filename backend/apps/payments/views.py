@@ -227,7 +227,7 @@ class OrderListView(APIView):
             with transaction.atomic():
                 # Calculate totals
                 subtotal = cart.total_amount
-                tax = Decimal('0.00')  # Add tax calculation if needed
+                tax = subtotal * Decimal('0.18')  # 18% GST
                 discount = Decimal('0.00')  # Add discount logic if needed
                 total = subtotal + tax - discount
 
@@ -282,8 +282,19 @@ class OrderListView(APIView):
                     }
                 
                 elif payment_method == 'razorpay':
+                    # Convert USD to INR for Razorpay (approximate rate: 1 USD = 83 INR)
+                    USD_TO_INR_RATE = Decimal('83.00')
+                    total_inr = total * USD_TO_INR_RATE
+                    
+                    # Create a temporary order copy with INR for Razorpay
+                    order.currency = 'INR'
+                    order.total_amount = total_inr
+                    order.save()
+                    
                     payment_data = PaymentService.create_payment_intent_razorpay(order)
                     payment.payment_intent_id = payment_data['order_id']
+                    payment.currency = 'INR'
+                    payment.amount = total_inr
                     payment.save()
                     
                     response_data = {
@@ -291,7 +302,10 @@ class OrderListView(APIView):
                         'order_id': order.id,
                         'order_number': order.order_number,
                         'total_amount': str(total),
-                        'currency': order.currency,
+                        'total_amount_inr': str(total_inr),
+                        'currency': 'USD',
+                        'payment_currency': 'INR',
+                        'conversion_rate': str(USD_TO_INR_RATE),
                         'razorpay_order_id': payment_data['order_id'],
                         'razorpay_key_id': payment_data['key_id']
                     }
@@ -411,7 +425,14 @@ class ConfirmPaymentView(APIView):
             if verification.get('success'):
                 payment.transaction_id = verification.get('transaction_id')
                 payment.status = 'completed'
-                payment.gateway_response = verification
+                # Convert Decimal values to strings for JSON serialization
+                gateway_response_clean = {}
+                for key, value in verification.items():
+                    if isinstance(value, Decimal):
+                        gateway_response_clean[key] = str(value)
+                    else:
+                        gateway_response_clean[key] = value
+                payment.gateway_response = gateway_response_clean
                 payment.save()
 
                 # Update order status
