@@ -98,7 +98,7 @@ class OrderAdmin(admin.ModelAdmin):
     status_display.short_description = 'Status'
 
     def total_amount_display(self, obj):
-        return f"${obj.total_amount:.2f} {obj.currency}"
+        return f"{obj.total_amount:.2f} {obj.currency}"
     total_amount_display.short_description = 'Total'
     total_amount_display.admin_order_field = 'total_amount'
 
